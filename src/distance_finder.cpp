@@ -1,7 +1,7 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
-#include <navigation/PropInProgress.h>
+#include <navigation_pkg/PropInProgress.h>
 #include <cmath>
 
 class DistanceFinder {
@@ -16,7 +16,7 @@ public:
 
         sub_scan_ = nh_.subscribe(scan_topic_, 1, &DistanceFinder::scanCallback, this);
         sub_prop_ = nh_.subscribe(prop_topic_, 1, &DistanceFinder::propCallback, this);
-        pub_prop_closest_ = nh_.advertise<navigation::PropInProgress>("/prop_closest_point", 1);
+        pub_prop_closest_ = nh_.advertise<navigation_pkg::PropInProgress>("/prop_closest_point", 1);
     }
 
     void spin() {
@@ -39,10 +39,10 @@ private:
     double laser_angle_min;
     double laser_angle_max;
     double laser_angle_increment;
-    navigation::PropInProgress prop_msg_;
+    navigation_pkg::PropInProgress prop_msg_;
     sensor_msgs::LaserScan scan_msg;
 
-    void propCallback(const navigation::PropInProgress::ConstPtr& msg) {
+    void propCallback(const navigation_pkg::PropInProgress::ConstPtr& msg) {
         // save the PropInProgress message for later use
         prop_msg_ = *msg;
         ROS_INFO_STREAM("Received PropInProgress message with theta_1=" << prop_msg_.theta_1
@@ -92,7 +92,7 @@ private:
         float closest_angle = ((closest_angle_index/steps)*(laser_angle_max*2)) - (laser_angle_max);
 
 
-        navigation::PropInProgress closest_prop_msg;
+        navigation_pkg::PropInProgress closest_prop_msg;
         closest_prop_msg.prop_type = prop_msg_.prop_type;
         closest_prop_msg.theta_1 = prop_msg_.theta_1;
         closest_prop_msg.theta_2 = prop_msg_.theta_2;

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(navigation)
+project(navigation_pkg)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -119,7 +119,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES navigation
+#  LIBRARIES navigation_pkg
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
   CATKIN_DEPENDS message_runtime
@@ -138,7 +138,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/navigation.cpp
+#   src/${PROJECT_NAME}/navigation_pkg.cpp
 # )
 
 ## Add cmake target dependencies of the library

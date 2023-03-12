@@ -1,13 +1,13 @@
 #include <ros/ros.h>
-#include <navigation/Prop.h>
-#include <navigation/PropArray.h>
+#include <navigation_pkg/Prop.h>
+#include <navigation_pkg/PropArray.h>
 
 class PropMapping {
 public:
     PropMapping()
     {
         prop_sub_ = nh_.subscribe("/completed_props", 1, &PropMapping::propCallback, this);
-        prop_pub_ = nh_.advertise<navigation::PropArray>("/prop_array", 1);
+        prop_pub_ = nh_.advertise<navigation_pkg::PropArray>("/prop_array", 1);
         
     }
 
@@ -21,10 +21,10 @@ public:
 
 private:
 
-    void propCallback(const navigation::Prop::ConstPtr& msg)
+    void propCallback(const navigation_pkg::Prop::ConstPtr& msg)
     {
         // get prop info
-        navigation::Prop prop;
+        navigation_pkg::Prop prop;
         prop.prop_type = msg->prop_type;
         prop.prop_coords.latitude = msg->prop_coords.latitude;
         prop.prop_coords.longitude = msg->prop_coords.longitude;
@@ -54,12 +54,12 @@ private:
     ros::NodeHandle nh_;
     ros::Subscriber prop_sub_;
     ros::Publisher prop_pub_;
-    navigation::PropArray prop_array;
+    navigation_pkg::PropArray prop_array;
 
-    bool isPropInArray(navigation::Prop prop){
+    bool isPropInArray(navigation_pkg::Prop prop){
         //use safety ranges to decide if prop is already in array
         for (int i = 0; i < prop_array.props.size(); i++) {
-            navigation::Prop checkprop = prop_array.props[i];
+            navigation_pkg::Prop checkprop = prop_array.props[i];
             
             if ( prop.prop_coords.latitude <= checkprop.prop_coord_range.max_latitude && prop.prop_coords.latitude >= checkprop.prop_coord_range.min_latitude
             && prop.prop_coords.longitude <= checkprop.prop_coord_range.max_longitude && prop.prop_coords.longitude >= checkprop.prop_coord_range.min_longitude) {

@@ -1,8 +1,8 @@
 #include <ros/ros.h>
-#include <navigation/Compass.h> 
-#include <navigation/PropInProgress.h>
-#include <navigation/Prop.h>
-#include <navigation/SimpleGPS.h> //temporary
+#include <navigation_pkg/Compass.h> 
+#include <navigation_pkg/PropInProgress.h>
+#include <navigation_pkg/Prop.h>
+#include <navigation_pkg/SimpleGPS.h> //temporary
 #include <geographic_msgs/GeoPoint.h>
 #include <cmath> 
 
@@ -13,7 +13,7 @@ public:
         gps_sub_ = nh_.subscribe("/rectbot_coords", 1, &CoordFinder::gpsCallback, this);
         compass_sub_ = nh_.subscribe("/rectbot_heading", 1, &CoordFinder::compassCallback, this );
         prop_sub_ = nh_.subscribe("/prop_closest_point", 1, &CoordFinder::propCallback, this);
-        prop_pub_ = nh_.advertise<navigation::Prop>("/completed_props", 1);
+        prop_pub_ = nh_.advertise<navigation_pkg::Prop>("/completed_props", 1);
         //nh_.getParam("safety_range", safety_range); not working right now
         //nh_.getParam("degrees_lat_per_meter", degrees_lat_per_meter);
         //nh_.getParam("degrees_lon_per_meter", degrees_lon_per_meter);
@@ -29,19 +29,19 @@ public:
     }
 
 private:
-    void gpsCallback(const navigation::SimpleGPS::ConstPtr& msg)
+    void gpsCallback(const navigation_pkg::SimpleGPS::ConstPtr& msg)
     {
         robot_lat_ = msg->latitude;
         robot_lon_ = msg->longitude;
         robot_alt_ = msg->altitude;
     }
 
-    void compassCallback(const navigation::Compass::ConstPtr& msg)
+    void compassCallback(const navigation_pkg::Compass::ConstPtr& msg)
     {
         robot_heading = msg->heading;
     }
 
-    void propCallback(const navigation::PropInProgress::ConstPtr& msg)
+    void propCallback(const navigation_pkg::PropInProgress::ConstPtr& msg)
     {
         //// Calculate the GPS coordinates of the prop
         float dist = msg->closest_pnt_dist;
@@ -69,7 +69,7 @@ private:
 
         
         // Create and publish the Prop message with the prop coordinates
-        navigation::Prop prop_msg;
+        navigation_pkg::Prop prop_msg;
         prop_msg.prop_type = msg->prop_type;
 
         prop_msg.prop_coords.latitude = prop_lat;
