@@ -1,0 +1,3 @@
+string prop_type
+geographic_msgs/GeoPoint prop_coords
+GeoPointRange prop_coord_range
