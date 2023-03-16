@@ -1,4 +1,4 @@
-#include "LidarPoint.h"
+#include "lidarPoint.h"
 
 // Default constructor
 LidarPoint::LidarPoint() : distance_(0.0), angle_(0.0) {}

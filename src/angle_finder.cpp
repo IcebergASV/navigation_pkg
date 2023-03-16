@@ -29,8 +29,8 @@ private:
         x_max = msg->xmax;
 
         // Calculate the angle range for the prop
-        float theta_right = fov_end - ((x_max / realsense_res_x) * realsense_fov); 
-        float theta_left = fov_end - ((x_min / realsense_res_x) * realsense_fov);
+        double theta_right = fov_end - ((x_max / realsense_res_x) * realsense_fov); 
+        double theta_left = fov_end - ((x_min / realsense_res_x) * realsense_fov);
         
         // Create and publish the Prop message with the prop coordinates
         navigation_pkg::PropInProgress prop_msg;
@@ -43,10 +43,10 @@ private:
     ros::NodeHandle nh_;
     ros::Subscriber yolo_sub_;
     ros::Publisher prop_pub_;
-    float x_min;
-    float x_max;
-    float const realsense_fov = 1.204277184; //radians - 69 degrees
-    float const fov_end = (M_PI / 2) + (realsense_fov / 2 );
+    double x_min;
+    double x_max;
+    double const realsense_fov = 1.204277184; //radians - 69 degrees
+    double const fov_end = (M_PI / 2) + (realsense_fov / 2 );
     int const realsense_res_x = 1920;
 };
 

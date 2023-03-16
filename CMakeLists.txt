@@ -132,14 +132,15 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+ #include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/navigation_pkg.cpp
-# )
+add_library(lidarPointLib
+  src/lidarPoint.cpp
+  src/lidarPoint.h
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -161,10 +162,7 @@ include_directories(
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+
 
 #############
 ## Install ##
@@ -252,3 +250,10 @@ add_dependencies(prop_mapping_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_
 add_executable(fake_compass_headings_node src/fake_compass_headings.cpp)
 target_link_libraries(fake_compass_headings_node ${catkin_LIBRARIES})
 add_dependencies(fake_compass_headings_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(distance_finder_node
+  lidarPointLib
+ )

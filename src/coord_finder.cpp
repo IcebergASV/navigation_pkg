@@ -44,9 +44,9 @@ private:
     void propCallback(const navigation_pkg::PropInProgress::ConstPtr& msg)
     {
         //// Calculate the GPS coordinates of the prop
-        float dist = msg->closest_pnt_dist;
-        float angle = msg->closest_pnt_angle;
-        float prop_heading;
+        double dist = msg->closest_pnt_dist;
+        double angle = msg->closest_pnt_angle;
+        double prop_heading;
         
         if ((robot_heading - angle) > (2*M_PI))
             prop_heading = robot_heading - angle - (2* M_PI);
@@ -89,13 +89,13 @@ private:
     ros::Subscriber prop_sub_;
     ros::Subscriber compass_sub_;
     ros::Publisher prop_pub_;
-    float robot_lat_;
-    float robot_lon_;
-    float robot_alt_;
-    float robot_heading;
-    float safety_range = 0.1;
-    float degrees_lat_per_meter = 8.9942910391e-06;
-    float degrees_lon_per_meter = 1.32865719904e-05;
+    double robot_lat_;
+    double robot_lon_;
+    double robot_alt_;
+    double robot_heading;
+    double safety_range = 0.1;
+    double degrees_lat_per_meter = 8.9942910391e-06;
+    double degrees_lon_per_meter = 1.32865719904e-05;
 
 
 

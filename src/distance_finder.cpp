@@ -41,8 +41,8 @@ private:
     double laser_angle_min;
     double laser_angle_max;
     double laser_angle_increment;
-    float angle_safety_range = 0.0;
-    float marker_distance_safety_range = 0.5; //should be slightly larger than radius of a marker
+    double angle_safety_range = 0.0;
+    double marker_distance_safety_range = 0.5; //should be slightly larger than radius of a marker
     navigation_pkg::PropInProgress prop_msg_;
     sensor_msgs::LaserScan scan_msg;
 
@@ -65,10 +65,10 @@ private:
         }
 
         //add a safety range onto the bounding box angles
-        float index1_angle = prop_msg_.theta_1 + angle_safety_range;
-        float index2_angle = prop_msg_.theta_2 - angle_safety_range
+        double index1_angle = prop_msg_.theta_1 + angle_safety_range;
+        double index2_angle = prop_msg_.theta_2 - angle_safety_range;
         // calculate the range indexes for the given theta angles
-        float steps = (laser_angle_max * 2) / laser_angle_increment; 
+        double steps = (laser_angle_max * 2) / laser_angle_increment; 
         int index1 = (int)(((index1_angle + (laser_angle_max - (M_PI/2))) / (laser_angle_max*2))* steps);
         int index2 = (int)(((index2_angle + (laser_angle_max - (M_PI/2))) / (laser_angle_max*2))* steps);
 
@@ -79,7 +79,7 @@ private:
         }
 
         //create a 2D vector containing distance angle pairs for points detected by lidar within the range provided by yolo
-        std::vector<LidarPoint> scanPoints = createLidarPoints(scan_msgs.ranges, index1_angle, laser_angle_increment);
+        std::vector<LidarPoint> scanPoints = DistanceFinder::createLidarPoints(scan_msg.ranges, index1_angle, laser_angle_increment);
         
         //create a smaller vector of only points within the camera provided range
         std::vector<LidarPoint> selectedPoints;
@@ -95,22 +95,22 @@ private:
 
 
         //calculate the radius of the prop
-        float radius = calculateRadius(filteredPoints);
+        double radius = calculateRadius(filteredPoints);
 
         //Could add in check here to exclude the prop if the measured radius doesn't match expected radius
 
         // find the distance from the center of closest point and angle within the given range
 
         int i = 0;
-        float closest_pnt = filteredPoints[i].distance;
-        float closest_angle = filteredPoints[i].angle;
-        for (int i = 0; i <= filteredPoints.size(); i < ++i) {
-            if (std::isnan(filteredPoints[i].distance)) {
+        double closest_distance = filteredPoints[i].getDistance();
+        double closest_angle = filteredPoints[i].getAngle();
+        for (int i = 0; i < filteredPoints.size(); ++i) {
+            if (std::isnan(filteredPoints[i].getDistance())) {
                 continue; 
             }
-            if(filteredPoints[i].distance < closest_pnt){
-                closest_distance = filteredPoints[i].distance; 
-                closest_angle = filteredPoints[i].angle;       
+            if(filteredPoints[i].getDistance() < closest_distance){
+                closest_distance = filteredPoints[i].getDistance(); 
+                closest_angle = filteredPoints[i].getAngle();       
             }
         }
 
@@ -124,7 +124,7 @@ private:
     }
 
 
-    std::vector<LidarPoint> createLidarPoints(const std::vector<double>& distances, double startAngle, double angleIncrement) {
+    static std::vector<LidarPoint> createLidarPoints(const std::vector<float>& distances, double startAngle, double angleIncrement) {
         std::vector<LidarPoint> lidarPoints;
 
         // Add the first Lidar point
@@ -162,22 +162,22 @@ private:
 
     std::vector<LidarPoint> filterPoints(const std::vector<LidarPoint>& inputVector, double range) {
         std::vector<LidarPoint> outputVector;
-        double lowerBound = inputVector[0].distance;
-        double upperBound = inputVector[0].distance;
+        double lowerBound = inputVector[0].getDistance();
+        double upperBound = inputVector[0].getDistance();
 
         // Find the bounds of the range
         for (LidarPoint point : inputVector) {
-            if (point.distance < lowerBound) {
-                lowerBound = point.distance;
+            if (point.getDistance() < lowerBound) {
+                lowerBound = point.getDistance();
             }
-            if (point.distance > upperBound) {
-                upperBound = point.distance;
+            if (point.getDistance() > upperBound) {
+                upperBound = point.getDistance();
             }
         }
 
         // Add points to the output vector if their distance is within the range
         for (LidarPoint point : inputVector) {
-            if (point.distance >= lowerBound && point.distance <= upperBound && std::abs(point.distance - lowerBound) <= range && std::abs(point.distance - upperBound) <= range) {
+            if (point.getDistance() >= lowerBound && point.getDistance() <= upperBound && std::abs(point.getDistance() - lowerBound) <= range && std::abs(point.getDistance() - upperBound) <= range) {
                 outputVector.push_back(point);
             }
         }
@@ -185,23 +185,23 @@ private:
     return outputVector;
     }
     
-    float calculateRadius(const std::vector<LidarPoint>& points) {
+    double calculateRadius(const std::vector<LidarPoint>& points) {
         // Check that we have at least 6 points
         if (points.size() < 6) {
             throw std::runtime_error("At least 6 points are required to calculate the radius of a cylinder.");
         }
 
         // Convert angles to x,y coordinates on a unit circle
-        std::vector<float> x_coords(points.size());
-        std::vector<float> y_coords(points.size());
+        std::vector<double> x_coords(points.size());
+        std::vector<double> y_coords(points.size());
         for (size_t i = 0; i < points.size(); ++i) {
-            x_coords[i] = std::cos(points[i].angle);
-            y_coords[i] = std::sin(points[i].angle);
+            x_coords[i] = std::cos(points[i].getAngle());
+            y_coords[i] = std::sin(points[i].getAngle());
         }
 
         // Use linear regression to find the best-fit line for the x,y coordinates
-        float x_mean = 0.0f;
-        float y_mean = 0.0f;
+        double x_mean = 0.0f;
+        double y_mean = 0.0f;
         for (size_t i = 0; i < points.size(); ++i) {
             x_mean += x_coords[i];
             y_mean += y_coords[i];
@@ -209,10 +209,10 @@ private:
         x_mean /= points.size();
         y_mean /= points.size();
 
-        float slope = 0.0f;
-        float intercept = 0.0f;
-        float numerator = 0.0f;
-        float denominator = 0.0f;
+        double slope = 0.0f;
+        double intercept = 0.0f;
+        double numerator = 0.0f;
+        double denominator = 0.0f;
         for (size_t i = 0; i < points.size(); ++i) {
             numerator += (x_coords[i] - x_mean) * (y_coords[i] - y_mean);
             denominator += std::pow(x_coords[i] - x_mean, 2);
@@ -221,10 +221,10 @@ private:
         intercept = y_mean - slope * x_mean;
 
         // Calculate the center of the best-fit circle for the x,y coordinates
-        float center_x = -slope / 2.0f;
-        float center_y = intercept - slope * center_x;
+        double center_x = -slope / 2.0f;
+        double center_y = intercept - slope * center_x;
 
-        float radius = std::sqrt(std::pow(center_x, 2) + std::pow(center_y, 2));
+        double radius = std::sqrt(std::pow(center_x, 2) + std::pow(center_y, 2));
 
         return radius;
     }
