@@ -5,6 +5,7 @@
 #include <vector>
 #include <stdexcept>
 #include "lidarPoint.h"
+#include <string>
 
 class DistanceFinder {
 public:
@@ -54,6 +55,7 @@ private:
     }
 
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) {
+        ROS_INFO_STREAM("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
         // save the scan message for later use
         scan_msg = *msg;
         laser_angle_increment = scan_msg.angle_increment;
@@ -71,16 +73,17 @@ private:
         double steps = (laser_angle_max * 2) / laser_angle_increment; 
         int index1 = (int)(((index1_angle + (laser_angle_max - (M_PI/2))) / (laser_angle_max*2))* steps);
         int index2 = (int)(((index2_angle + (laser_angle_max - (M_PI/2))) / (laser_angle_max*2))* steps);
-
+        ROS_INFO_STREAM("Distance Finder: index1 :" << index1 << " index2: " << index2);
+        ROS_INFO_STREAM("Distance Finder: size of scan message ranges " << scan_msg.ranges.size());
         // check that the range indexes are within the range of the scan message and that index1 > index2
-        if (index1 < 0 || index2 < 0 || index1 >= scan_msg.ranges.size() || index2 >= scan_msg.ranges.size() || index1 <= index2) {
+        if (index1 < 0 || index2 < 0 || index1 >= scan_msg.ranges.size() || index2 >= scan_msg.ranges.size() || index1 >= index2) {
             ROS_WARN("PropInProgress message range indexes are out of bounds for the given scan message");
             return;
         }
 
         //create a 2D vector containing distance angle pairs for points detected by lidar within the range provided by yolo
         std::vector<LidarPoint> scanPoints = DistanceFinder::createLidarPoints(scan_msg.ranges, index1_angle, laser_angle_increment);
-        
+        ROS_INFO_STREAM("scanPoints Vector created");
         //create a smaller vector of only points within the camera provided range
         std::vector<LidarPoint> selectedPoints;
         for (int i = index1; i <= index2; i++) {
@@ -90,13 +93,14 @@ private:
 
         //filter out points not likely to be part of the marker
         std::vector<LidarPoint> filteredPoints = filterPoints(selectedPoints, marker_distance_safety_range);
-                
+        ROS_INFO_STREAM("filteredPoints Vector created");
         
 
 
         //calculate the radius of the prop
         double radius = calculateRadius(filteredPoints);
-
+        std::string radius_str = std::to_string(radius);
+        ROS_INFO_STREAM("calculated radius" << radius_str);
         //Could add in check here to exclude the prop if the measured radius doesn't match expected radius
 
         // find the distance from the center of closest point and angle within the given range
@@ -225,7 +229,7 @@ private:
         double center_y = intercept - slope * center_x;
 
         double radius = std::sqrt(std::pow(center_x, 2) + std::pow(center_y, 2));
-
+        ROS_INFO_STREAM("Marker radius: " << radius);
         return radius;
     }
 
