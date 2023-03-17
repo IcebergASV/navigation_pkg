@@ -7,9 +7,9 @@ void fake_bbox_angles() {
     ros::Publisher pub = nh.advertise<navigation::PropInProgress>("prop_angle_range", 1);
     ros::Rate rate(10);
     navigation::PropInProgress msg;
-    msg.prop_type = "red_marker";
-    msg.theta_1 = 1.6057;
-    msg.theta_2 = 2.7925;
+    msg.prop_type = "marker";
+    msg.theta_1 = 1.0472; //60
+    msg.theta_2 = 2.0944; //120
 
     while (ros::ok()) {
         ROS_INFO_STREAM(msg);
