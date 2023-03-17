@@ -1,3 +1,6 @@
+#include <iostream>
+#include <sstream>
+#include <vector>
 #include "lidarPoint.h"
 
 // Default constructor
@@ -24,4 +27,10 @@ void LidarPoint::setDistance(double distance) {
 // Setter for angle
 void LidarPoint::setAngle(double angle) {
     angle_ = angle;
+}
+
+// Overload << operator for LidarPoint objects
+std::ostream& operator<<(std::ostream& os, const LidarPoint& point) {
+    os << "(" << point.getDistance() << ", " << point.getAngle() << ")";
+    return os;
 }

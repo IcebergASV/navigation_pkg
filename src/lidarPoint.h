@@ -5,7 +5,7 @@ class LidarPoint {
 public:
     // Constructors
     LidarPoint();
-    LidarPoint(double distance, double angle);
+    LidarPoint(double distance, double angle);    
 
     // Getters
     double getDistance() const;
@@ -19,5 +19,8 @@ private:
     double distance_;
     double angle_;
 };
+
+//Operator Overloads
+std::ostream& operator<<(std::ostream& os, const LidarPoint& point);
 
 #endif // LIDARPOINT_H
