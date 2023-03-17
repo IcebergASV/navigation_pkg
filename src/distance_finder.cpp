@@ -85,14 +85,18 @@ private:
         }
 
         //create a 2D vector containing distance angle pairs for points detected by lidar within the range provided by yolo
-        std::vector<LidarPoint> scanPoints = DistanceFinder::createLidarPoints(scan_msg.ranges, index1_angle, laser_angle_increment);
+               //starting angle for lidar scan 
+        ROS_INFO_STREAM("Laser angle min" << laser_angle_min);
+        ROS_INFO_STREAM("Laser angle increment" << laser_angle_increment);
+        double starting_angle = laser_angle_min + (M_PI/2.0);
+        std::vector<LidarPoint> scanPoints = DistanceFinder::createLidarPoints(scan_msg.ranges, starting_angle, laser_angle_increment);
         ROS_INFO_STREAM("scanPoints Vector created");
         ROS_INFO_STREAM("I HATE THIS: " << scanPoints[0].getDistance());
-        // Iterate through the vector and print each element
-        for (const auto& point : scanPoints) {
-            ROS_INFO_STREAM("Scan Points: " << point);
-            
-        }
+        // Iterate through the vector and print each element - for debug
+        //for (const auto& point : scanPoints) {
+        //    ROS_INFO_STREAM("Scan Points: " << point);
+        //    
+        //}
 
 
         //create a smaller vector of only points within the camera provided range
@@ -145,7 +149,7 @@ private:
 
     static std::vector<LidarPoint> createLidarPoints(const std::vector<float>& distances, double startAngle, double angleIncrement) {
         std::vector<LidarPoint> lidarPoints;
-
+        ROS_INFO_STREAM("start angle: " << startAngle);
         // Add the first Lidar point
         LidarPoint firstPoint(distances[0], startAngle);
         lidarPoints.push_back(firstPoint);
@@ -186,7 +190,7 @@ private:
 
         // Find the bounds of the range
         for (LidarPoint point : inputVector) {
-            ROS_INFO_STREAM("Checking this point for filtering: " << point);
+            //ROS_INFO_STREAM("Checking this point for filtering: " << point);
             if (point.getDistance() < lowerBound) {
                 lowerBound = point.getDistance();
                 ROS_INFO_STREAM("Chaning filtering lower bound to : " << lowerBound);
@@ -218,38 +222,19 @@ private:
         std::vector<double> x_coords(points.size());
         std::vector<double> y_coords(points.size());
         for (size_t i = 0; i < points.size(); ++i) {
-            x_coords[i] = std::cos(points[i].getAngle());
-            y_coords[i] = std::sin(points[i].getAngle());
+            x_coords[i] = points[i].getDistance() * std::cos(points[i].getAngle());
+            y_coords[i] = points[i].getDistance() * std::sin(points[i].getAngle());
+            ROS_INFO_STREAM("xy converted points: " << x_coords[i] << ", " << y_coords[i]);
         }
 
-        // Use linear regression to find the best-fit line for the x,y coordinates
-        double x_mean = 0.0f;
-        double y_mean = 0.0f;
-        for (size_t i = 0; i < points.size(); ++i) {
-            x_mean += x_coords[i];
-            y_mean += y_coords[i];
-        }
-        x_mean /= points.size();
-        y_mean /= points.size();
 
-        double slope = 0.0f;
-        double intercept = 0.0f;
-        double numerator = 0.0f;
-        double denominator = 0.0f;
-        for (size_t i = 0; i < points.size(); ++i) {
-            numerator += (x_coords[i] - x_mean) * (y_coords[i] - y_mean);
-            denominator += std::pow(x_coords[i] - x_mean, 2);
-        }
-        slope = numerator / denominator;
-        intercept = y_mean - slope * x_mean;
+        //insert radius code here
+        return 0.03;//temporary
+ 
 
-        // Calculate the center of the best-fit circle for the x,y coordinates
-        double center_x = -slope / 2.0f;
-        double center_y = intercept - slope * center_x;
 
-        double radius = std::sqrt(std::pow(center_x, 2) + std::pow(center_y, 2));
-        ROS_INFO_STREAM("Marker radius: " << radius);
-        return radius;
+        //ROS_INFO_STREAM("Marker radius: " << radius);
+        //return radius;
     }
 
 };
