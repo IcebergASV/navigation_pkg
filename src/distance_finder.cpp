@@ -15,8 +15,8 @@ public:
         private_nh_.param<std::string>("prop_topic", prop_topic_, "/prop_angle_range");
         private_nh_.param<std::string>("scan_topic", scan_topic_, "/scan");
         private_nh_.param<double>("max_range", max_range_, 10.0);
-        private_nh_.param<double>("laser_angle_min", laser_angle_min, -M_PI/2.0);
-        private_nh_.param<double>("laser_angle_max", laser_angle_max, M_PI/2.0);
+        //private_nh_.param<double>("laser_angle_min", laser_angle_min, -M_PI/2.0);
+        //private_nh_.param<double>("laser_angle_max", laser_angle_max, M_PI/2.0);
 
         sub_scan_ = nh_.subscribe(scan_topic_, 1, &DistanceFinder::scanCallback, this);
         sub_prop_ = nh_.subscribe(prop_topic_, 1, &DistanceFinder::propCallback, this);
@@ -24,7 +24,7 @@ public:
     }
 
     void spin() {
-        ros::Rate rate(10); // 10 Hz
+        ros::Rate rate(2); // 10 Hz
         while (ros::ok()) {
             ros::spinOnce();
             rate.sleep();
@@ -58,6 +58,8 @@ private:
     }
 
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) {
+        laser_angle_min = scan_msg.angle_min;
+        laser_angle_max = scan_msg.angle_max;
         ROS_INFO_STREAM("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
         // save the scan message for later use
         scan_msg = *msg;
@@ -97,7 +99,7 @@ private:
         ROS_INFO_STREAM("Laser angle min" << laser_angle_min);
         ROS_INFO_STREAM("Laser angle increment" << laser_angle_increment);
         double starting_angle = laser_angle_min + (M_PI/2.0);
-        std::vector<LidarPoint> scanPoints = DistanceFinder::createLidarPoints(scan_msg.ranges, starting_angle, laser_angle_increment);
+        std::vector<lidarPoint> scanPoints = DistanceFinder::createLidarPoints(scan_msg.ranges, starting_angle, laser_angle_increment);
         ROS_INFO_STREAM("scanPoints Vector created");
         ROS_INFO_STREAM("I HATE THIS: " << scanPoints[0].getDistance());
         // Iterate through the vector and print each element - for debug
@@ -108,15 +110,19 @@ private:
 
 
         //create a smaller vector of only points within the camera provided range
-        std::vector<LidarPoint> selectedPoints;
+        std::vector<lidarPoint> selectedPoints;
         for (int i = index1; i <= index2; i++) {
 
             selectedPoints.push_back(scanPoints[i]);
         }
 
         //filter out points not likely to be part of the marker
-        std::vector<LidarPoint> filteredPoints = filterPoints(selectedPoints, marker_distance_safety_range);
+        std::vector<lidarPoint> filteredPoints = filterPoints(selectedPoints, marker_distance_safety_range);
         ROS_INFO_STREAM("filteredPoints Vector created");
+        if (filteredPoints.size()<1){
+            ROS_WARN("No points passed through filter");
+            return;
+        }
         // Iterate through the vector and print each element
         for (const auto& point : filteredPoints) {
             ROS_INFO_STREAM("Filtered Points: " << point);
@@ -157,18 +163,18 @@ private:
     }
 
 
-    static std::vector<LidarPoint> createLidarPoints(const std::vector<float>& distances, double startAngle, double angleIncrement) {
-        std::vector<LidarPoint> lidarPoints;
+    static std::vector<lidarPoint> createLidarPoints(const std::vector<float>& distances, double startAngle, double angleIncrement) {
+        std::vector<lidarPoint> lidarPoints;
         ROS_INFO_STREAM("start angle: " << startAngle);
         // Add the first Lidar point
-        LidarPoint firstPoint(distances[0], startAngle);
+        lidarPoint firstPoint(distances[0], startAngle);
         lidarPoints.push_back(firstPoint);
 
         // Add the remaining Lidar points
         double currentAngle = startAngle + angleIncrement;
         for (size_t i = 1; i < distances.size(); i++) {
             double distance = distances[i];
-            LidarPoint point(distance, currentAngle);
+            lidarPoint point(distance, currentAngle);
             lidarPoints.push_back(point);
 
             currentAngle += angleIncrement;
@@ -193,36 +199,36 @@ private:
     return smallerVector;
     }
 
-    std::vector<LidarPoint> filterPoints(const std::vector<LidarPoint>& inputVector, double range) {
-        std::vector<LidarPoint> outputVector;
-        double lowerBound = inputVector[0].getDistance();
-        double upperBound = lidar_min_distance;
+    std::vector<lidarPoint> filterPoints(const std::vector<lidarPoint>& inputVector, double range) {
+        std::vector<lidarPoint> outputVector;
+        //double lowerBound = inputVector[0].getDistance();
+        //double upperBound = lidar_min_distance;
 
-        // Find the bounds of the range
-        for (LidarPoint point : inputVector) {
-            //ROS_INFO_STREAM("Checking this point for filtering: " << point);
-            if (point.getDistance() < lowerBound) {
-                lowerBound = point.getDistance();
-                ROS_INFO_STREAM("Chaning filtering lower bound to : " << lowerBound);
-            }
-            if (point.getDistance() > upperBound && point.getDistance() < lidar_max_distance) {
-                upperBound = point.getDistance();
-                ROS_INFO_STREAM("Changing filtering upper bound to : " << upperBound);
-            }
-        }
+        // Find the bounds of the range - not working!
+        //for (lidarPoint point : inputVector) {
+        //    //ROS_INFO_STREAM("Checking this point for filtering: " << point);
+        //    if (point.getDistance() < lowerBound) {
+        //        lowerBound = point.getDistance();
+        //        //ROS_INFO_STREAM("Chaning filtering lower bound to : " << lowerBound);
+        //    }
+        //    if (point.getDistance() > upperBound && point.getDistance() < lidar_max_distance) {
+        //        upperBound = point.getDistance();
+        //        //ROS_INFO_STREAM("Changing filtering upper bound to : " << upperBound);
+        //    }
+        //}
 
         // Add points to the output vector if their distance is within the range
-        for (LidarPoint point : inputVector) {
-            if (point.getDistance() >= lowerBound && point.getDistance() <= upperBound && std::abs(point.getDistance() - lowerBound) <= range && std::abs(point.getDistance() - upperBound) <= range) {
+        for (lidarPoint point : inputVector) {
+            if (point.getDistance() >= 0.1  && point.getDistance() <= 20 ) {
                 outputVector.push_back(point);
-                ROS_INFO_STREAM("Just pushed back: " << point << " Into filtered Points Vector");
+                //ROS_INFO_STREAM("Just pushed back: " << point << " Into filtered Points Vector");
             }
         }
 
     return outputVector;
     }
     
-    double calculateRadius(const std::vector<LidarPoint>& points) {
+    double calculateRadius(const std::vector<lidarPoint>& points) {
         // Check that we have at least 6 points
         //if (points.size() < 6) {
         //    throw std::runtime_error("At least 6 points are required to calculate the radius of a cylinder.");
@@ -234,7 +240,7 @@ private:
         for (size_t i = 0; i < points.size(); ++i) {
             x_coords[i] = points[i].getDistance() * std::cos(points[i].getAngle());
             y_coords[i] = points[i].getDistance() * std::sin(points[i].getAngle());
-            ROS_INFO_STREAM("xy converted points: " << x_coords[i] << ", " << y_coords[i]);
+            //ROS_INFO_STREAM("xy converted points: " << x_coords[i] << ", " << y_coords[i]);
         }
 
 

@@ -4,33 +4,33 @@
 #include "lidarPoint.h"
 
 // Default constructor
-LidarPoint::LidarPoint() : distance_(0.0), angle_(0.0) {}
+lidarPoint::lidarPoint() : distance_(0.0), angle_(0.0) {}
 
 // Constructor with input parameters
-LidarPoint::LidarPoint(double distance, double angle) : distance_(distance), angle_(angle) {}
+lidarPoint::lidarPoint(double distance, double angle) : distance_(distance), angle_(angle) {}
 
 // Getter for distance
-double LidarPoint::getDistance() const {
+double lidarPoint::getDistance() const {
     return distance_;
 }
 
 // Getter for angle
-double LidarPoint::getAngle() const {
+double lidarPoint::getAngle() const {
     return angle_;
 }
 
 // Setter for distance
-void LidarPoint::setDistance(double distance) {
+void lidarPoint::setDistance(double distance) {
     distance_ = distance;
 }
 
 // Setter for angle
-void LidarPoint::setAngle(double angle) {
+void lidarPoint::setAngle(double angle) {
     angle_ = angle;
 }
 
-// Overload << operator for LidarPoint objects
-std::ostream& operator<<(std::ostream& os, const LidarPoint& point) {
+// Overload << operator for lidarPoint objects
+std::ostream& operator<<(std::ostream& os, const lidarPoint& point) {
     os << "(" << point.getDistance() << ", " << point.getAngle() << ")";
     return os;
 }
