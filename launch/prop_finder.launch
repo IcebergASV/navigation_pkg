@@ -13,9 +13,9 @@
   <node name="fake_compass_headings" pkg="navigation_pkg" type="fake_compass_headings_node" output="log">
   </node-->
 
-  <node pkg="urg_node" type="urg_node" name="urg_node" output="screen">
+  <!--node pkg="urg_node" type="urg_node" name="urg_node" output="screen">
         <param name="ip_address" value="192.168.0.10" />
-  </node>
+  </node-->
 
   <!--node name="angle_finder" pkg="navigation_pkg" type="angle_finder_node" output="log">
   </node-->

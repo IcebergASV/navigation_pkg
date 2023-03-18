@@ -9,7 +9,7 @@ void fake_bbox_angles() {
     navigation_pkg::PropInProgress msg;
     msg.prop_type = "red_marker";
     msg.theta_1 = 1.5;
-    msg.theta_2 = 1.6;
+    msg.theta_2 = 2.4;
 
     while (ros::ok()) {
         ROS_INFO_STREAM(msg);
