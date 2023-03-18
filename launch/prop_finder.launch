@@ -20,13 +20,17 @@
     <!-- Add any necessary arguments here -->
   </node>
 
+  <node pkg="urg_node" type="urg_node" name="urg_node" output="screen">
+        <param name="ip_address" value="192.168.0.10" />
+  </node>
+
   <!-- Start angle_finder node -->
   <node name="angle_finder" pkg="navigation_pkg" type="angle_finder_node" output="log">
     <!-- Add any necessary arguments here -->
   </node>
 
   <!-- Start distance_finder node -->
-  <node name="distance_finder" pkg="navigation_pkg" type="distance_finder_node" output="log">
+  <node name="distance_finder" pkg="navigation_pkg" type="distance_finder_node" output="screen">
     <!-- Add any necessary arguments here -->
   </node>
 

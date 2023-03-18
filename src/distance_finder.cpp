@@ -13,7 +13,7 @@ public:
     DistanceFinder() : nh_(""), private_nh_("~") {
         // get ROS parameters
         private_nh_.param<std::string>("prop_topic", prop_topic_, "/prop_angle_range");
-        private_nh_.param<std::string>("scan_topic", scan_topic_, "/rect_bot/laser/scan");
+        private_nh_.param<std::string>("scan_topic", scan_topic_, "/scan");
         private_nh_.param<double>("max_range", max_range_, 10.0);
         private_nh_.param<double>("laser_angle_min", laser_angle_min, -M_PI/2.0);
         private_nh_.param<double>("laser_angle_max", laser_angle_max, M_PI/2.0);
@@ -53,8 +53,8 @@ private:
     void propCallback(const navigation_pkg::PropInProgress::ConstPtr& msg) {
         // save the PropInProgress message for later use
         prop_msg_ = *msg;
-        ROS_INFO_STREAM("Received PropInProgress message with theta_1=" << prop_msg_.theta_1
-            << " and theta_2=" << prop_msg_.theta_2);
+        //ROS_INFO_STREAM("Received PropInProgress message with theta_1=" << prop_msg_.theta_1
+        //    << " and theta_2=" << prop_msg_.theta_2);
     }
 
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) {
@@ -64,8 +64,16 @@ private:
         laser_angle_increment = scan_msg.angle_increment;
 
         // check if the PropInProgress message is valid
-        if (prop_msg_.prop_type.empty() || std::isnan(prop_msg_.theta_1) || std::isnan(prop_msg_.theta_2)) {
-            ROS_WARN("Invalid PropInProgress message received");
+        if (prop_msg_.prop_type.empty()) {
+            ROS_WARN("Invalid PropInProgress message received - Prop type is empty");
+            return;
+        }
+        if (std::isnan(prop_msg_.theta_1)) {
+            ROS_WARN("Invalid PropInProgress message received - theta 1 is empty");
+            return;
+        }
+        if (std::isnan(prop_msg_.theta_2)) {
+            ROS_WARN("Invalid PropInProgress message received - theta 2 is empty");
             return;
         }
 
