@@ -144,6 +144,8 @@ private:
                 closest_angle = filteredPoints[i].getAngle();       
             }
         }
+        ROS_INFO_STREAM("closest_distance " << closest_distance);
+        ROS_INFO_STREAM("closest angle " << closest_angle);
 
         navigation_pkg::PropInProgress closest_prop_msg;
         closest_prop_msg.prop_type = prop_msg_.prop_type;
