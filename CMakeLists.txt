@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(navigation)
+project(navigation_pkg)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -119,7 +119,7 @@ generate_messages(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES navigation
+#  LIBRARIES navigation_pkg
 #  CATKIN_DEPENDS roscpp rospy std_msgs
 #  DEPENDS system_lib
   CATKIN_DEPENDS message_runtime
@@ -132,14 +132,15 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+ #include
   ${catkin_INCLUDE_DIRS}
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/navigation.cpp
-# )
+add_library(lidarPointLib
+  src/lidarPoint.cpp
+  src/lidarPoint.h
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -161,10 +162,7 @@ include_directories(
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+
 
 #############
 ## Install ##
@@ -252,3 +250,10 @@ add_dependencies(prop_mapping_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_
 add_executable(fake_compass_headings_node src/fake_compass_headings.cpp)
 target_link_libraries(fake_compass_headings_node ${catkin_LIBRARIES})
 add_dependencies(fake_compass_headings_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(distance_finder_node
+  lidarPointLib
+ )

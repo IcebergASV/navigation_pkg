@@ -1,11 +1,11 @@
 #include <ros/ros.h>
-#include <navigation/Compass.h> //temporary
+#include <navigation_pkg/Compass.h> //temporary
 
 void fake_compass_headings() {
     ros::NodeHandle nh;
-    ros::Publisher pub = nh.advertise<navigation::Compass>("/rectbot_heading", 10);
+    ros::Publisher pub = nh.advertise<navigation_pkg::Compass>("/rectbot_heading", 10);
     ros::Rate rate(10);
-    navigation::Compass msg;
+    navigation_pkg::Compass msg;
     msg.heading = 5.235987756;
 
     while (ros::ok()) {

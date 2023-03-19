@@ -1,11 +1,11 @@
 #include <ros/ros.h>
-#include <navigation/yolo.h> 
+#include <navigation_pkg/yolo.h> 
 
 void fake_yolo_boxes() {
     ros::NodeHandle nh;
-    ros::Publisher pub = nh.advertise<navigation::yolo>("/yolo", 10);
+    ros::Publisher pub = nh.advertise<navigation_pkg::yolo>("/yolo", 10);
     ros::Rate rate(10);
-    navigation::yolo msg;
+    navigation_pkg::yolo msg;
     msg.label = "red_marker";
     msg.probability = 0.91; 
     msg.xmin = 100;
