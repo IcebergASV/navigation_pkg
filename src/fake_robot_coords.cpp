@@ -1,11 +1,11 @@
 #include <ros/ros.h>
-#include <navigation/SimpleGPS.h> //temporary
+#include <navigation_pkg/SimpleGPS.h> //temporary
 
 void fake_robot_coords() {
     ros::NodeHandle nh;
-    ros::Publisher pub = nh.advertise<navigation::SimpleGPS>("/rectbot_coords", 10);
+    ros::Publisher pub = nh.advertise<navigation_pkg::SimpleGPS>("/rectbot_coords", 10);
     ros::Rate rate(10);
-    navigation::SimpleGPS msg;
+    navigation_pkg::SimpleGPS msg;
     msg.latitude = 47.0; // Example latitude value
     msg.longitude = 52.0; // Example longitude value
     msg.altitude = 50.0; // Example altitude value
