@@ -13,7 +13,7 @@ public:
     DistanceFinder() : nh_(""), private_nh_("~") {
         // get ROS parameters
         private_nh_.param<std::string>("prop_topic", prop_topic_, "/prop_angle_range");
-        private_nh_.param<std::string>("scan_topic", scan_topic_, "/rect_bot/laser/scan");
+        private_nh_.param<std::string>("scan_topic", scan_topic_, "/scan");
         private_nh_.param<double>("max_range", max_range_, 10.0);
         //private_nh_.param<double>("laser_angle_min", laser_angle_min, -M_PI/2.0);
         //private_nh_.param<double>("laser_angle_max", laser_angle_max, M_PI/2.0);
