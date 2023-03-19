@@ -20,7 +20,7 @@
   <!--node name="angle_finder" pkg="navigation_pkg" type="angle_finder_node" output="log">
   </node-->
 
-  <node name="distance_finder" pkg="navigation_pkg" type="distance_finder_node" output="screen">
+  <node name="distance_finder" pkg="navigation_pkg" type="distance_finder_node" output="log">
   </node>
 
 
