@@ -2,16 +2,18 @@
 #include <navigation_pkg/Compass.h> 
 #include <navigation_pkg/PropInProgress.h>
 #include <navigation_pkg/Prop.h>
-#include <navigation_pkg/SimpleGPS.h> //temporary
+//#include <navigation_pkg/SimpleGPS.h> //temporary
 #include <geographic_msgs/GeoPoint.h>
+#include <sensor_msgs/NavSatFix.h>
+#include <std_msgs/Float64.h>
 #include <cmath> 
 
 class CoordFinder {
 public:
     CoordFinder()
     {
-        gps_sub_ = nh_.subscribe("/rectbot_coords", 1, &CoordFinder::gpsCallback, this);
-        compass_sub_ = nh_.subscribe("/rectbot_heading", 1, &CoordFinder::compassCallback, this );
+        gps_sub_ = nh_.subscribe("/mavros/global_position/global", 1, &CoordFinder::gpsCallback, this);
+        compass_sub_ = nh_.subscribe("/mavros/global_position/compass_hgd", 1, &CoordFinder::compassCallback, this );
         prop_sub_ = nh_.subscribe("/prop_closest_point", 1, &CoordFinder::propCallback, this);
         prop_pub_ = nh_.advertise<navigation_pkg::Prop>("/completed_props", 1);
         //nh_.getParam("safety_range", safety_range); not working right now
@@ -29,16 +31,16 @@ public:
     }
 
 private:
-    void gpsCallback(const navigation_pkg::SimpleGPS::ConstPtr& msg)
+    void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg)
     {
         robot_lat_ = msg->latitude;
         robot_lon_ = msg->longitude;
         robot_alt_ = msg->altitude;
     }
 
-    void compassCallback(const navigation_pkg::Compass::ConstPtr& msg)
+    void compassCallback(const std_msgs::Float64::ConstPtr& msg)
     {
-        robot_heading = msg->heading;
+        robot_heading = msg->data;
     }
 
     void propCallback(const navigation_pkg::PropInProgress::ConstPtr& msg)
@@ -58,7 +60,7 @@ private:
 
         double lat_diff = north_dist * degrees_lat_per_meter;
         double lon_diff = east_dist * degrees_lon_per_meter;
-
+//ROS_INFO_STREAM("Robot Latitude inside propCallback" << robot_lat_);
         double prop_lat = robot_lat_ + lat_diff;
         double prop_lon = robot_lon_ + lon_diff;
         double prop_alt = robot_alt_;

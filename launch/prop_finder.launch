@@ -24,13 +24,13 @@
   </node>
 
 
-  <!--node name="coord_finder" pkg="navigation_pkg" type="coord_finder_node" output="log"-->
+  <node name="coord_finder" pkg="navigation_pkg" type="coord_finder_node" output="log">
     <!--param name = "degrees_lat_per_meter" value="6.2"/>
     <param name = "degrees_lon_per_meter" value="5.2"/>
     <param name = "safety_range_meters" value="0.1"/-->
 
-  <!--/node-->
+  </node>
 
-  <!--node name="prop_mapping" pkg="navigation_pkg" type="prop_mapping_node" output="log">
-  </node-->
+  <node name="prop_mapping" pkg="navigation_pkg" type="prop_mapping_node" output="log">
+  </node>
 </launch>
