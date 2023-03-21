@@ -15,8 +15,7 @@ public:
         private_nh_.param<std::string>("prop_topic", prop_topic_, "/prop_angle_range");
         private_nh_.param<std::string>("scan_topic", scan_topic_, "/scan");
         private_nh_.param<double>("max_range", max_range_, 10.0);
-        //private_nh_.param<double>("laser_angle_min", laser_angle_min, -M_PI/2.0);
-        //private_nh_.param<double>("laser_angle_max", laser_angle_max, M_PI/2.0);
+
 
         sub_scan_ = nh_.subscribe(scan_topic_, 1, &DistanceFinder::scanCallback, this);
         sub_prop_ = nh_.subscribe(prop_topic_, 1, &DistanceFinder::propCallback, this);
@@ -60,7 +59,7 @@ private:
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) {
         laser_angle_min = scan_msg.angle_min;
         laser_angle_max = scan_msg.angle_max;
-        ROS_INFO_STREAM("AHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH");
+
         // save the scan message for later use
         scan_msg = *msg;
         laser_angle_increment = scan_msg.angle_increment;
