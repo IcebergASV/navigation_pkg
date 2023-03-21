@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <!-- Specify what functionality you are testing-->
-    <arg name="yolo-detection-with-camera" default="false"/>
+    <arg name="yolo-detection-with-camera" default="false"/> <!-- not implemented yet-->
     <arg name="lidar-distance-angle-measurement" default="true"/>
     <arg name="coordinate-mapping" default="true"/> <!--requires 'lidar-distance-angle-measurement'-->
     <arg name="prop-mapping" default="true"/> <!-- requires 'cordinate-mapping'-->
 
-  <!-- Specify if you want to use simulated sensor readings-->
-    <arg name="sim-compass-gps" default="false"/>
+  <!-- Specify if you want to use simulated sensors below, if not fake constant values are produced to replace them-->
+    <arg name="compass-gps" default="false"/>
   <!--=======================================================================-->
 
   
@@ -18,17 +18,18 @@
   </node>
 
   <node name="distance_finder" pkg="navigation_pkg" type="distance_finder_node" output="log" if="$(arg lidar-distance-angle-measurement)" >
+    <remap from="scan" to="/rect_bot/laser/scan"/>
   </node>
 
-  <node name="fake_robot_coords" pkg="navigation_pkg" type="fake_robot_coords_node" output="log" if="$(arg sim-compass-gps)">
+  <node name="fake_robot_coords" pkg="navigation_pkg" type="fake_robot_coords_node" output="log" unless="$(arg compass-gps)">
   </node>
 
-  <node name="fake_compass_headings" pkg="navigation_pkg" type="fake_compass_headings_node" output="log" if="$(arg sim-compass-gps)">
+  <node name="fake_compass_headings" pkg="navigation_pkg" type="fake_compass_headings_node" output="log" unless="$(arg compass-gps)">
   </node>
 
   <node name="coord_finder" pkg="navigation_pkg" type="coord_finder_node" output="log" if="$(arg coordinate-mapping)">
-    <remap from="mavros/global_position/global" to="rectbot_coords" if="$(arg sim-compass-gps)"/>
-    <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" if="$(arg simcompass-gps)"/>
+    <remap from="mavros/global_position/global" to="rectbot_coords" unless="$(arg compass-gps)"/>
+    <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" unless="$(arg compass-gps)"/>
   </node>
 
   <node name="prop_mapping" pkg="navigation_pkg" type="prop_mapping_node" output="log" if="$(arg prop-mapping)">

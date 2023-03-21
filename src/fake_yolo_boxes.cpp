@@ -2,6 +2,7 @@
 #include <navigation_pkg/yolo.h> 
 
 void fake_yolo_boxes() {
+    //for testing angle finder only - remove eventually
     ros::NodeHandle nh;
     ros::Publisher pub = nh.advertise<navigation_pkg::yolo>("/yolo", 10);
     ros::Rate rate(10);

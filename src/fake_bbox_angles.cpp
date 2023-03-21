@@ -9,8 +9,8 @@ void fake_bbox_angles() {
     ros::Rate rate(10);
     navigation_pkg::PropInProgress msg;
     msg.prop_type = "marker";
-    msg.theta_1 = 95*(M_PI/180); 
-    msg.theta_2 = 85*(M_PI/180); 
+    msg.theta_1 = 60*(M_PI/180); 
+    msg.theta_2 = 120*(M_PI/180); 
 
     while (ros::ok()) {
         ROS_INFO_STREAM(msg);
