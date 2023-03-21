@@ -10,8 +10,8 @@ class CoordFinder {
 public:
     CoordFinder()
     {
-        gps_sub_ = nh_.subscribe("/rectbot_coords", 1, &CoordFinder::gpsCallback, this);
-        compass_sub_ = nh_.subscribe("/rectbot_heading", 1, &CoordFinder::compassCallback, this );
+        gps_sub_ = nh_.subscribe("/mavros/global_position/global", 1, &CoordFinder::gpsCallback, this);
+        compass_sub_ = nh_.subscribe("/mavros/global_position/compass_hdg", 1, &CoordFinder::compassCallback, this );
         prop_sub_ = nh_.subscribe("/prop_closest_point", 1, &CoordFinder::propCallback, this);
         prop_pub_ = nh_.advertise<navigation_pkg::Prop>("/completed_props", 1);
         //nh_.getParam("safety_range", safety_range); not working right now
