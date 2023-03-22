@@ -8,15 +8,15 @@
 
 class CoordFinder {
 public:
-    CoordFinder()
+    CoordFinder() : nh_(""), private_nh_("~") 
     {
         gps_sub_ = nh_.subscribe("/mavros/global_position/global", 1, &CoordFinder::gpsCallback, this);
         compass_sub_ = nh_.subscribe("/mavros/global_position/compass_hdg", 1, &CoordFinder::compassCallback, this );
         prop_sub_ = nh_.subscribe("/prop_closest_point", 1, &CoordFinder::propCallback, this);
         prop_pub_ = nh_.advertise<navigation_pkg::Prop>("/completed_props", 1);
-        //nh_.getParam("safety_range", safety_range); not working right now
-        //nh_.getParam("degrees_lat_per_meter", degrees_lat_per_meter);
-        //nh_.getParam("degrees_lon_per_meter", degrees_lon_per_meter);
+        private_nh_.param<double>("coord_mapping_error_estimation", coord_mapping_error_estimation, 0.0); 
+        private_nh_.param<double>("degrees_lat_per_meter", degrees_lat_per_meter, 0.0);
+        private_nh_.param<double>("degrees_lon_per_meter", degrees_lon_per_meter, 0.0);
         
     }
 
@@ -64,8 +64,9 @@ private:
         double prop_alt = robot_alt_;
 
 
-        double lat_safety_range = degrees_lat_per_meter * safety_range;
-        double lon_safety_range = degrees_lon_per_meter * safety_range;
+        double lat_safety_range = degrees_lat_per_meter * coord_mapping_error_estimation;
+        double lon_safety_range = degrees_lon_per_meter * coord_mapping_error_estimation;
+        ROS_INFO_STREAM("lon_s_range " << lon_safety_range);
 
         
         // Create and publish the Prop message with the prop coordinates
@@ -85,6 +86,7 @@ private:
     }
 
     ros::NodeHandle nh_;
+    ros::NodeHandle private_nh_;
     ros::Subscriber gps_sub_;
     ros::Subscriber prop_sub_;
     ros::Subscriber compass_sub_;
@@ -93,9 +95,9 @@ private:
     double robot_lon_;
     double robot_alt_;
     double robot_heading;
-    double safety_range = 0.1;
-    double degrees_lat_per_meter = 8.9942910391e-06;
-    double degrees_lon_per_meter = 1.32865719904e-05;
+    double coord_mapping_error_estimation;
+    double degrees_lat_per_meter;
+    double degrees_lon_per_meter;
 
 
 
