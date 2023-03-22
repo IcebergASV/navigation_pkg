@@ -20,6 +20,11 @@ public:
         sub_scan_ = nh_.subscribe(scan_topic_, 1, &DistanceFinder::scanCallback, this);
         sub_prop_ = nh_.subscribe(prop_topic_, 1, &DistanceFinder::propCallback, this);
         pub_prop_closest_ = nh_.advertise<navigation_pkg::PropInProgress>("/prop_closest_point", 1);
+        private_nh_.param<double>("angle_error_adjustment", angle_error_adjustment, 0.0);
+        private_nh_.param<double>("marker_base_diameter_for_filtering", marker_diameter_for_filtering, 0.0 );
+        private_nh_.param<double>("max_lidar_range", max_lidar_range, 0.0 );
+        private_nh_.param<double>("min_lidar_range", min_lidar_range, 0.0 );
+
     }
 
     void spin() {
@@ -29,6 +34,7 @@ public:
             rate.sleep();
         }
     }
+    
 
 private:
     ros::NodeHandle nh_;
@@ -42,10 +48,10 @@ private:
     double laser_angle_min;
     double laser_angle_max;
     double laser_angle_increment;
-    double angle_safety_range = 0.0;
-    double marker_distance_safety_range = 2.0; //should be slightly larger than radius of a marker
-    double lidar_max_distance = 25;
-    double lidar_min_distance = 0.5;
+    double angle_error_adjustment;
+    double marker_diameter_for_filtering; 
+    double max_lidar_range;
+    double min_lidar_range;
     navigation_pkg::PropInProgress prop_msg_;
     sensor_msgs::LaserScan scan_msg;
 
@@ -79,8 +85,8 @@ private:
         }
 
         //add a safety range onto the bounding box angles
-        double index1_angle = prop_msg_.theta_1 + angle_safety_range;
-        double index2_angle = prop_msg_.theta_2 - angle_safety_range;
+        double index1_angle = prop_msg_.theta_1 + angle_error_adjustment;
+        double index2_angle = prop_msg_.theta_2 - angle_error_adjustment;
         // calculate the range indexes for the given theta angles
         double steps = (laser_angle_max * 2) / laser_angle_increment; 
         int index1 = (int)(((index1_angle + (laser_angle_max - (M_PI/2))) / (laser_angle_max*2))* steps);
@@ -125,7 +131,7 @@ private:
         }
 
         //filter out points not likely to be part of the marker
-        std::vector<lidarPoint> filteredPoints = filterPoints(selectedPoints, marker_distance_safety_range);
+        std::vector<lidarPoint> filteredPoints = filterPoints(selectedPoints, marker_diameter_for_filtering);
         ROS_INFO_STREAM("filteredPoints Vector created");
         if (filteredPoints.size()<1){
             ROS_WARN("No points passed through filter");
@@ -215,11 +221,11 @@ private:
         }
         std::vector<lidarPoint> outputVector;
 
-        double smallest_distance = lidar_max_distance;
-        ROS_INFO_STREAM("lidar_max_distance" << lidar_max_distance);
+        double smallest_distance = max_lidar_range;
+        ROS_INFO_STREAM("max_lidar_range" << max_lidar_range);
         ROS_INFO_STREAM("inputVector.size " << inputVector.size());
         for (lidarPoint point : inputVector) {
-            ROS_INFO_STREAM("for loop");
+
             if (std::isnan(point.getDistance())) {
                 continue; 
                 ROS_INFO_STREAM("no distance in point");
@@ -229,13 +235,13 @@ private:
                 ROS_INFO_STREAM("Changing smallest distance to : " << smallest_distance);       
             }
             else {
-                ROS_INFO_STREAM("smallest_distance : " << smallest_distance << " inputVector[i].getDISTANCE : " << point.getDistance());
+                //ROS_INFO_STREAM("smallest_distance : " << smallest_distance << " inputVector[i].getDISTANCE : " << point.getDistance());
             }
         }
 
         // Add points to the output vector if their distance is within the range
         for (lidarPoint point : inputVector) {
-            if ((point.getDistance() >= smallest_distance)  && (point.getDistance() <= (smallest_distance + range)) && (point.getDistance() < lidar_max_distance) ) {
+            if ((point.getDistance() >= smallest_distance)  && (point.getDistance() <= (smallest_distance + range)) && (point.getDistance() < max_lidar_range) ) {
                 outputVector.push_back(point);
                 //ROS_INFO_STREAM("Just pushed back: " << point << " Into filtered Points Vector");
             }

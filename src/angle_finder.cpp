@@ -6,10 +6,12 @@
 
 class AngleFinder {
 public:
-    AngleFinder()
+    AngleFinder() : nh_(""), private_nh_("~") 
     {
         yolo_sub_ = nh_.subscribe("/yolo", 1, &AngleFinder::yoloCallback, this);
         prop_pub_ = nh_.advertise<navigation_pkg::PropInProgress>("/prop_angles", 1);
+        private_nh_.param<double>("realsense_fov", realsense_fov, 0.0);
+        private_nh_.param<int>("realsense_res_x", realsense_res_x, 0);
     }
 
     void spin() {
@@ -41,13 +43,14 @@ private:
     }
 
     ros::NodeHandle nh_;
+    ros::NodeHandle private_nh_;
     ros::Subscriber yolo_sub_;
     ros::Publisher prop_pub_;
     double x_min;
     double x_max;
-    double const realsense_fov = 1.204277184; //radians - 69 degrees
-    double const fov_end = (M_PI / 2) + (realsense_fov / 2 );
-    int const realsense_res_x = 1920;
+    double realsense_fov;
+    double fov_end = (M_PI / 2) + (realsense_fov / 2 );
+    int realsense_res_x;
 };
 
 int main(int argc, char** argv) {

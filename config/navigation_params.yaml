@@ -1,8 +1,11 @@
-yolo_angles_error_adjustment: 0.0 #radians
-marker_base_diameter_for_filtering: 0.4572 #meters 
-marker_diameter_for fitlering: 0 #unknown
+realsense_fov: 1.204277184 #radians
+realsense_res_x: 1920 #pixel width of image frames
+angle_error_adjustment: 0.0 #radians
+marker_base_diameter_for_filtering: 10 #meters 
+#marker_diameter_for fitlering: 10 #unknown
 max_lidar_range: 29 #meters - should be slightly less than real range, or accurate range
 min_lidar_range: 0.1 #meters - should be slight larger than real, or accurate range
 prop_coord_range: 0.1 #meters, used to create a 'bubble' around identified prop so that it doesn't remap the same prop
-realsense_fov: 1.204277184 #radians
-realsense_res_x: 1920 #pixel width of image frames
+coord_mapping_error_estimation: 0.01 #meters
+degrees_lat_per_meter: 8.9942910391e-06
+degrees_lon_per_meter: 1.32865719904e-05
