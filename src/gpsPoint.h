@@ -8,12 +8,12 @@ public:
     gpsPoint(double latitude, double longitude);    
 
     // Getters
-    double getDistance() const;
-    double getAngle() const;
+    double getLatitude() const;
+    double getLongitude() const;
 
     // Setters
-    void setDistance(double latitude);
-    void setAngle(double longitude);
+    void setLatitude(double latitude);
+    void setLongitude(double longitude);
 
 private:
     double latitude_;

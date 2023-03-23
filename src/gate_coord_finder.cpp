@@ -50,29 +50,41 @@ private:
 
     void propCallback(const navigation_pkg::GateInProgress::ConstPtr& msg)
     {
-        
-        //// Calculate the GPS coordinates of each marker
-        gpsPoint close_marker_coords = mapProp(msg->closer_marker);
-        gpsPoint far_marker_coords = mapProp(msg->farther_marker);
+        //get lidar points for both markers
+        lidarPoint close_marker_lidar_point;
+        lidarPoint far_marker_lidar_point;
+        close_marker_lidar_point.setDistance(msg.closer_marker.closest_point_distance);
+        close_marker_lidar_point.setAngle(msg.closer_marker.closest_point_angle);
+        far_marker_lidar_point.setDistance(msg.far_marker.closest_point_distance);
+        far_marker_lidar_point.setAngle(msg.far_marker.closest_point_angle);
 
-        //calculate coordinates of midpoint of each marker
-        gpsPoint midpoint = calculateMidpoint(close_marker_coords, far_marker_coords);
+        //// Calculate the GPS coordinates of each marker
+        gpsPoint close_marker_coords = mapProp(close_marker_lidar_point);
+        gpsPoint far_marker_coords = mapProp(far_marker_lidar_point);
+
+        //calculate coordinates of midpoint of each marker - to do
+        //gpsPoint midpoint = calculateMidpoint(close_marker_coords, far_marker_coords);
+
+        //mid point safety range
+
+        double lat_safety_range = degrees_lat_per_meter * coord_mapping_error_estimation;
+        double lon_safety_range = degrees_lon_per_meter * coord_mapping_error_estimation;
 
         navigation_pkg::Gate gate_msg;
 
         gate_msg.closer_marker.prop_type = "marker";
-        gate_msg.closer_marker.prop_coords.latitude 
-        gate_msg.closer_marker.prop_coords.longitude
-        gate_msg.closer_marker.prop_coords.altitude
+        gate_msg.closer_marker.prop_coords.latitude = close_marker_coords.getLatitude();
+        gate_msg.closer_marker.prop_coords.longitude = close_marker_coords.getLongitude();
+        gate_msg.closer_marker.prop_coords.altitude = robot_alt_;
 
         gate_msg.farther_marker.prop_type = "marker";
-        gate_msg.farther_marker.prop_coords.latitude 
-        gate_msg.farther_marker.prop_coords.longitude
-        gate_msg.farther_marker.prop_coords.altitude
+        gate_msg.farther_marker.prop_coords.latitude = far_marker_coords.getLatitude();
+        gate_msg.farther_marker.prop_coords.longitude = far_marker_coords.getLongitude();
+        gate_msg.farther_marker.prop_coords.altitude = robot_alt_;
 
-        gate_msg.midpoint.latitude
-        gate_msg.midpoint.longitude
-        gate_msg.midpoint.altitude
+        gate_msg.midpoint.latitude = 0.0;
+        gate_msg.midpoint.longitude = 0.0;
+        gate_msg.midpoint.altitude = 0.0;
 
         gate_msg.midpoint_range.min_latitude = lat - lat_safety_range;
         gate_msg.midpoint_range.max_latitude = lat + lat_safety_range;
@@ -80,9 +92,12 @@ private:
         gate_msg.midpoint_range.max_longitude = lon + lon_safety_range;
 
         prop_pub_.publish(gate_msg);
+    }
 
-        double dist = msg->closest_pnt_dist;
-        double angle = msg->closest_pnt_angle;
+    gpsPoint mapProp(const lidarPoint& marker) {
+ 
+        double dist = marker.getDistance();
+        double angle = marker.getAngle();
         double prop_heading;
         
         if ((robot_heading - angle) > (2*M_PI))
@@ -96,45 +111,17 @@ private:
         double lat_diff = north_dist * degrees_lat_per_meter;
         double lon_diff = east_dist * degrees_lon_per_meter;
 
+        
         double prop_lat = robot_lat_ + lat_diff;
         double prop_lon = robot_lon_ + lon_diff;
-        double prop_alt = robot_alt_;
 
+        gpsPoint prop_coords;
 
-        double lat_safety_range = degrees_lat_per_meter * coord_mapping_error_estimation;
-        double lon_safety_range = degrees_lon_per_meter * coord_mapping_error_estimation;
-
+        prop_coords.setLatitude(prop_lat);
+        prop_coords.setLongitude(prop_lon);
         
-        // Create and publish the Prop message with the prop coordinates
-        navigation_pkg::Prop prop_msg;
-        prop_msg.prop_type = msg->prop_type;
+        return prop_coords;
 
-        prop_msg.prop_coords.latitude = prop_lat;
-        prop_msg.prop_coords.longitude = prop_lon;
-        prop_msg.prop_coords.altitude = prop_alt;
-
-        prop_msg.prop_coord_range.min_latitude = prop_lat - lat_safety_range;
-        prop_msg.prop_coord_range.max_latitude = prop_lat + lat_safety_range;
-        prop_msg.prop_coord_range.min_longitude = prop_lon - lon_safety_range;
-        prop_msg.prop_coord_range.max_longitude = prop_lon + lon_safety_range;
-
-        prop_pub_.publish(prop_msg);
-    }
-
-    gpsPoint mapProp(const navigation_pkg::Gate::ConstPtr& marker) {
- 
-        if (startIndex > endIndex) {
-            throw std::invalid_argument("Start index cannot be greater than end index");
-        }
-
-        std::vector<int> smallerVector;
-
-        // Add the values from startIndex to endIndex (inclusive) to the smaller vector
-        for (int i = startIndex; i <= endIndex; i++) {
-            smallerVector.push_back(largerVector[i]);
-        }
-
-    return smallerVector;
     }
 
     ros::NodeHandle nh_;

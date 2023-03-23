@@ -10,12 +10,12 @@ gpsPoint::gpsPoint() : latitude_(0.0), longitude_(0.0) {}
 gpsPoint::gpsPoint(double latitude, double longitude) : latitude_(latitude), longitude_(longitude) {}
 
 // Getter for latitude
-double gpsPoint::getDistance() const {
+double gpsPoint::getLatitude() const {
     return latitude_;
 }
 
 // Getter for longitude
-double gpsPoint::getAngle() const {
+double gpsPoint::getLongitude() const {
     return longitude_;
 }
 
@@ -31,6 +31,6 @@ void gpsPoint::setAngle(double longitude) {
 
 // Overload << operator for gpsPoint objects
 std::ostream& operator<<(std::ostream& os, const gpsPoint& point) {
-    os << "(" << point.getDistance() << ", " << point.getAngle() << ")";
+    os << "(" << point.getLatitude() << ", " << point.getLongitude() << ")";
     return os;
 }
