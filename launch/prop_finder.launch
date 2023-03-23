@@ -30,7 +30,7 @@
 
   <node name="coord_finder" pkg="navigation_pkg" type="coord_finder_node" output="log" if="$(arg coordinate-mapping)">
     <remap from="mavros/global_position/global" to="rectbot_coords" if="$(arg sim-compass-gps)"/>
-    <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" if="$(arg simcompass-gps)"/>
+    <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" if="$(arg sim-compass-gps)"/>
     <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
   </node>
 
