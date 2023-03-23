@@ -1,3 +1,4 @@
 Prop closer_marker
 Prop farther_marker
 geographic_msgs/GeoPoint midpoint_coords
+GeoPointRange midpoint_range
