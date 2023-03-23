@@ -7,5 +7,5 @@ max_lidar_range: 29 #meters - should be slightly less than real range, or accura
 min_lidar_range: 0.1 #meters - should be slight larger than real, or accurate range
 prop_coord_range: 0.1 #meters, used to create a 'bubble' around identified prop so that it doesn't remap the same prop
 coord_mapping_error_estimation: 0.01 #meters
-degrees_lat_per_meter: 8.9942910391e-06
-degrees_lon_per_meter: 1.32865719904e-05
+degrees_lat_per_meter: 9.02455226019e-06
+degrees_lon_per_meter: 1.01053264398e-05

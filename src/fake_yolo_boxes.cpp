@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <navigation_pkg/yolo.h> 
+#include <ros/console.h>
 
 void fake_yolo_boxes() {
     //for testing angle finder only - remove eventually
@@ -15,13 +16,15 @@ void fake_yolo_boxes() {
     msg.ymax = 400;
 
     while (ros::ok()) {
-        ROS_INFO_STREAM(msg);
+        ROS_DEBUG_STREAM(msg);
         pub.publish(msg);
         rate.sleep();
     }
 }
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fake_yolo_boxes_node");
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+        ros::console::notifyLoggerLevelsChanged();
     try {
         fake_yolo_boxes();
     }

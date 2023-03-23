@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <navigation_pkg/SimpleGPS.h> //temporary
+#include <ros/console.h>
 
 void fake_robot_coords() {
     ros::NodeHandle nh;
@@ -11,13 +12,15 @@ void fake_robot_coords() {
     msg.altitude = 50.0; // Example altitude value
 
     while (ros::ok()) {
-        ROS_INFO_STREAM(msg);
+        ROS_DEBUG_STREAM(msg);
         pub.publish(msg);
         rate.sleep();
     }
 }
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fake_robot_coords_node");
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+        ros::console::notifyLoggerLevelsChanged();
     try {
         fake_robot_coords();
     }

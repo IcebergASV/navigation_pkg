@@ -2,6 +2,8 @@
 #include <navigation_pkg/yolo.h>
 #include <navigation_pkg/PropInProgress.h>
 #include <cmath>
+#include <ros/console.h>
+
 
 
 class AngleFinder {
@@ -55,6 +57,8 @@ private:
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "angle_finder_node");
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+        ros::console::notifyLoggerLevelsChanged();
     AngleFinder angle_finder;
     angle_finder.spin();
     return 0;
