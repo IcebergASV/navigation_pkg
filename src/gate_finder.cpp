@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/LaserScan.h>
 #include <navigation_pkg/PropInProgress.h>
+#include <navigation_pkg/GateInProgress.h>
 #include <cmath>
 #include <vector>
 #include <stdexcept>
@@ -20,7 +21,7 @@ public:
 
         sub_scan_ = nh_.subscribe(scan_topic_, 1, &DistanceFinder::scanCallback, this);
         sub_prop_ = nh_.subscribe(prop_topic_, 1, &DistanceFinder::propCallback, this);
-        pub_prop_closest_ = nh_.advertise<navigation_pkg::PropInProgress>("/prop_closest_point", 1);
+        pub_prop_closest_ = nh_.advertise<navigation_pkg::GateInProgress>("/gate_closest_point", 1);
         private_nh_.param<double>("angle_error_adjustment", angle_error_adjustment, 0.0);
         private_nh_.param<double>("marker_base_diameter_for_filtering", marker_diameter_for_filtering, 0.0 );
         private_nh_.param<double>("max_lidar_range", max_lidar_range, 0.0 );
@@ -160,14 +161,68 @@ private:
         }
         ROS_DEBUG_STREAM("closest_distance " << closest_distance);
         ROS_DEBUG_STREAM("closest angle " << closest_angle);
+        
+        //set closer marker
+        navigation_pkg::Gate gate_msg;
+        gate_msg.closer_marker.prop_type = prop_msg_.prop_type;
+        gate_msg.closer_marker.theta_1 = prop_msg_.theta_1;
+        gate_msg.closer_marker.theta_2 = prop_msg_.theta_2;
+        gate_msg.closer_marker.closest_pnt_dist = closest_distance;
+        gate_msg.closer_marker.closest_pnt_angle = closest_angle;
 
-        navigation_pkg::PropInProgress closest_prop_msg;
-        closest_prop_msg.prop_type = prop_msg_.prop_type;
-        closest_prop_msg.theta_1 = prop_msg_.theta_1;
-        closest_prop_msg.theta_2 = prop_msg_.theta_2;
-        closest_prop_msg.closest_pnt_dist = closest_distance;
-        closest_prop_msg.closest_pnt_angle = closest_angle;
-        pub_prop_closest_.publish(closest_prop_msg);
+        //remove closer marker from selected points -> selected points = selected points - filtered points
+        for (const auto& s_point : selectedPoints) {
+            for (const auto& f_point : filteredPoints){
+                if (s_point.getDistance() == f_point.getDistance() && s_point.getAngle() == f_point.getAngle()){
+                    selectedPoints.erase(s_point);
+                }
+            }            
+        }
+        std::vector<lidarPoint> filteredPoints2 = filterPoints(selectedPoints, marker_diameter_for_filtering);
+        //filter new selected points 
+        if (filteredPoints2.size()<1){
+            ROS_WARN("No points passed through filter");
+            return;
+        }
+        // Iterate through the vector and print each element
+        for (const auto& point : filteredPoints2) {
+            ROS_DEBUG_STREAM("Filtered Points2: " << point);
+            
+        }
+
+
+        //calculate the radius of the prop
+        double radius = calculateRadius(filteredPoints2);
+        std::string radius_str = std::to_string(radius);
+        ROS_DEBUG_STREAM("calculated radius" << radius_str);
+        //Could add in check here to exclude the prop if the measured radius doesn't match expected radius
+
+        // find the distance from the center of closest point and angle within the given range
+
+        int i = 0;
+        closest_distance = filteredPoints2[i].getDistance();
+        closest_angle = filteredPoints2[i].getAngle();
+        for (int i = 0; i < filteredPoints2.size(); ++i) {
+            if (std::isnan(filteredPoints2[i].getDistance())) {
+                continue; 
+            }
+            if(filteredPoints2[i].getDistance() < closest_distance){
+                closest_distance = filteredPoints2[i].getDistance(); 
+                closest_angle = filteredPoints2[i].getAngle();       
+            }
+        }
+        ROS_DEBUG_STREAM("closest_distance " << closest_distance);
+        ROS_DEBUG_STREAM("closest angle " << closest_angle);
+        
+
+        //radius and distance of prop
+        gate_msg.farther_marker.prop_type = prop_msg_.prop_type;
+        gate_msg.farther_marker.theta_1 = prop_msg_.theta_1;
+        gate_msg.farther_marker.theta_2 = prop_msg_.theta_2;
+        gate_msg.farther_marker.closest_pnt_dist = closest_distance;
+        gate_msg.farther_marker.closest_pnt_angle = closest_angle;
+        
+        pub_prop_closest_.publish(gate_msg);
     }
 
 

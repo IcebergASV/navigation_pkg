@@ -1,0 +1,2 @@
+Prop closer_marker
+Prop farther_marker
