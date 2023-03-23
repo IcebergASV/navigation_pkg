@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <navigation_pkg/Compass.h> //temporary
+#include <ros/console.h>
 
 void fake_compass_headings() {
     ros::NodeHandle nh;
@@ -9,13 +10,15 @@ void fake_compass_headings() {
     msg.heading = 5.235987756;
 
     while (ros::ok()) {
-        ROS_INFO_STREAM(msg);
+        ROS_DEBUG_STREAM("fake_compass_headings: " << msg.heading );
         pub.publish(msg);
         rate.sleep();
     }
 }
 int main(int argc, char** argv) {
     ros::init(argc, argv, "fake_compass_headings_node");
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+        ros::console::notifyLoggerLevelsChanged();
     try {
         fake_compass_headings();
     }

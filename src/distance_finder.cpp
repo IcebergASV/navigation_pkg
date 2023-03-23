@@ -7,6 +7,7 @@
 #include "lidarPoint.h"
 #include <string>
 #include <iostream>
+#include <ros/console.h>
 
 class DistanceFinder {
 public:
@@ -58,8 +59,8 @@ private:
     void propCallback(const navigation_pkg::PropInProgress::ConstPtr& msg) {
         // save the PropInProgress message for later use
         prop_msg_ = *msg;
-        //ROS_INFO_STREAM("Received PropInProgress message with theta_1=" << prop_msg_.theta_1
-        //    << " and theta_2=" << prop_msg_.theta_2);
+        ROS_DEBUG_STREAM("Received PropInProgress message with theta_1=" << prop_msg_.theta_1
+            << " and theta_2=" << prop_msg_.theta_2);
     }
 
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) {
@@ -91,8 +92,8 @@ private:
         double steps = (laser_angle_max * 2) / laser_angle_increment; 
         int index1 = (int)(((index1_angle + (laser_angle_max - (M_PI/2))) / (laser_angle_max*2))* steps);
         int index2 = (int)(((index2_angle + (laser_angle_max - (M_PI/2))) / (laser_angle_max*2))* steps);
-        ROS_INFO_STREAM("Distance Finder: index1 :" << index1 << " index2: " << index2);
-        ROS_INFO_STREAM("Distance Finder: size of scan message ranges " << scan_msg.ranges.size());
+        ROS_DEBUG_STREAM("Distance Finder: index1 :" << index1 << " index2: " << index2);
+        ROS_DEBUG_STREAM("Distance Finder: size of scan message ranges " << scan_msg.ranges.size());
         // check that the range indexes are within the range of the scan message and that index1 > index2
         if (index1 < 0 || index2 < 0 || index1 >= scan_msg.ranges.size() || index2 >= scan_msg.ranges.size() || index1 >= index2) {
             ROS_WARN("PropInProgress message range indexes are out of bounds for the given scan message");
@@ -101,21 +102,14 @@ private:
 
         //create a 2D vector containing distance angle pairs for points detected by lidar within the range provided by yolo
                //starting angle for lidar scan 
-        ROS_INFO_STREAM("Laser angle min" << laser_angle_min);
-        ROS_INFO_STREAM("Laser angle increment" << laser_angle_increment);
+        ROS_DEBUG_STREAM("Laser angle min" << laser_angle_min);
+        ROS_DEBUG_STREAM("Laser angle increment" << laser_angle_increment);
         double starting_angle = laser_angle_min + (M_PI/2.0);
         std::vector<lidarPoint> scanPoints = DistanceFinder::createLidarPoints(scan_msg.ranges, starting_angle, laser_angle_increment);
         if (scanPoints.size()<1){
             ROS_WARN("No points added to scanPoints vector");
             return;
         }
-        ROS_INFO_STREAM("scanPoints Vector created");
-        ROS_INFO_STREAM("I HATE THIS: " << scanPoints[0].getDistance());
-        // Iterate through the vector and print each element - for debug
-        //for (const auto& point : scanPoints) {
-        //    ROS_INFO_STREAM("Scan Points: " << point);
-        //    
-        //}
 
 
         //create a smaller vector of only points within the camera provided range
@@ -123,7 +117,7 @@ private:
         for (int i = index1; i <= index2; i++) {
 
             selectedPoints.push_back(scanPoints[i]);
-            ROS_INFO_STREAM("Pushing back points within camera range: " << scanPoints[i]);
+            ROS_DEBUG_STREAM("Pushing back points within camera range: " << scanPoints[i]);
         }
         if (selectedPoints.size()<1){
             ROS_WARN("No points added to vector containing points within camera range ");
@@ -132,14 +126,14 @@ private:
 
         //filter out points not likely to be part of the marker
         std::vector<lidarPoint> filteredPoints = filterPoints(selectedPoints, marker_diameter_for_filtering);
-        ROS_INFO_STREAM("filteredPoints Vector created");
+        ROS_DEBUG_STREAM("filteredPoints Vector created");
         if (filteredPoints.size()<1){
             ROS_WARN("No points passed through filter");
             return;
         }
         // Iterate through the vector and print each element
         for (const auto& point : filteredPoints) {
-            ROS_INFO_STREAM("Filtered Points: " << point);
+            ROS_DEBUG_STREAM("Filtered Points: " << point);
             
         }
 
@@ -147,7 +141,7 @@ private:
         //calculate the radius of the prop
         double radius = calculateRadius(filteredPoints);
         std::string radius_str = std::to_string(radius);
-        ROS_INFO_STREAM("calculated radius" << radius_str);
+        ROS_DEBUG_STREAM("calculated radius" << radius_str);
         //Could add in check here to exclude the prop if the measured radius doesn't match expected radius
 
         // find the distance from the center of closest point and angle within the given range
@@ -164,8 +158,8 @@ private:
                 closest_angle = filteredPoints[i].getAngle();       
             }
         }
-        ROS_INFO_STREAM("closest_distance " << closest_distance);
-        ROS_INFO_STREAM("closest angle " << closest_angle);
+        ROS_DEBUG_STREAM("closest_distance " << closest_distance);
+        ROS_DEBUG_STREAM("closest angle " << closest_angle);
 
         navigation_pkg::PropInProgress closest_prop_msg;
         closest_prop_msg.prop_type = prop_msg_.prop_type;
@@ -179,7 +173,7 @@ private:
 
     static std::vector<lidarPoint> createLidarPoints(const std::vector<float>& distances, double startAngle, double angleIncrement) {
         std::vector<lidarPoint> lidarPoints;
-        ROS_INFO_STREAM("start angle: " << startAngle);
+        ROS_DEBUG_STREAM("start angle: " << startAngle);
         // Add the first Lidar point
         lidarPoint firstPoint(distances[0], startAngle);
         lidarPoints.push_back(firstPoint);
@@ -222,20 +216,20 @@ private:
         std::vector<lidarPoint> outputVector;
 
         double smallest_distance = max_lidar_range;
-        ROS_INFO_STREAM("max_lidar_range" << max_lidar_range);
-        ROS_INFO_STREAM("inputVector.size " << inputVector.size());
+        ROS_DEBUG_STREAM("max_lidar_range" << max_lidar_range);
+        ROS_DEBUG_STREAM("inputVector.size " << inputVector.size());
         for (lidarPoint point : inputVector) {
 
             if (std::isnan(point.getDistance())) {
                 continue; 
-                ROS_INFO_STREAM("no distance in point");
+                ROS_WARN("no distance in point");
             }
             if(point.getDistance() < smallest_distance){
                 smallest_distance = point.getDistance();
-                ROS_INFO_STREAM("Changing smallest distance to : " << smallest_distance);       
+                ROS_DEBUG_STREAM("Changing smallest distance to : " << smallest_distance);       
             }
             else {
-                //ROS_INFO_STREAM("smallest_distance : " << smallest_distance << " inputVector[i].getDISTANCE : " << point.getDistance());
+                ROS_DEBUG_STREAM("smallest_distance : " << smallest_distance << " inputVector[i].getDISTANCE : " << point.getDistance());
             }
         }
 
@@ -243,7 +237,7 @@ private:
         for (lidarPoint point : inputVector) {
             if ((point.getDistance() >= smallest_distance)  && (point.getDistance() <= (smallest_distance + range)) && (point.getDistance() < max_lidar_range) ) {
                 outputVector.push_back(point);
-                //ROS_INFO_STREAM("Just pushed back: " << point << " Into filtered Points Vector");
+                //ROS_DEBUG_STREAM("Just pushed back: " << point << " Into filtered Points Vector");
             }
         }
 
@@ -262,7 +256,7 @@ private:
         for (size_t i = 0; i < points.size(); ++i) {
             x_coords[i] = points[i].getDistance() * std::cos(points[i].getAngle());
             y_coords[i] = points[i].getDistance() * std::sin(points[i].getAngle());
-            //ROS_INFO_STREAM("xy converted points: " << x_coords[i] << ", " << y_coords[i]);
+            ROS_DEBUG_STREAM("xy converted points: " << x_coords[i] << ", " << y_coords[i]);
         }
 
 
@@ -271,14 +265,17 @@ private:
  
 
 
-        //ROS_INFO_STREAM("Marker radius: " << radius);
+        //ROS_DEBUG_STREAM("Marker radius: " << radius);
         //return radius;
     }
 
 };
 int main(int argc, char** argv) {
     ros::init(argc, argv, "distance_finder_node");
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+        ros::console::notifyLoggerLevelsChanged();
     DistanceFinder distance_finder;
+
     distance_finder.spin();
     return 0;
 }

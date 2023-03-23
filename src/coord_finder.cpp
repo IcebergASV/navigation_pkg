@@ -5,6 +5,9 @@
 #include <navigation_pkg/SimpleGPS.h> //temporary
 #include <geographic_msgs/GeoPoint.h>
 #include <cmath> 
+#include <ros/console.h>
+
+
 
 class CoordFinder {
 public:
@@ -66,7 +69,6 @@ private:
 
         double lat_safety_range = degrees_lat_per_meter * coord_mapping_error_estimation;
         double lon_safety_range = degrees_lon_per_meter * coord_mapping_error_estimation;
-        ROS_INFO_STREAM("lon_s_range " << lon_safety_range);
 
         
         // Create and publish the Prop message with the prop coordinates
@@ -106,6 +108,8 @@ private:
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "coord_finder_node");
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+        ros::console::notifyLoggerLevelsChanged();
     CoordFinder coord_finder;
     coord_finder.spin();
     return 0;

@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <navigation_pkg/Prop.h>
 #include <navigation_pkg/PropArray.h>
+#include <ros/console.h>
 
 class PropMapping {
 public:
@@ -43,7 +44,7 @@ private:
         if (isPropInArray(prop) == false){
             // add prop to array if not already there
             prop_array.props.push_back(prop);
-            ROS_INFO_STREAM("Prop is not in the array, adding it");
+            ROS_INFO_STREAM("New prop identified, adding to map");
         }
 
 
@@ -65,7 +66,7 @@ private:
             && prop.prop_coords.longitude <= checkprop.prop_coord_range.max_longitude && prop.prop_coords.longitude >= checkprop.prop_coord_range.min_longitude) {
                 //prop is already in array, don't add it to the array
                 return true;
-                ROS_INFO_STREAM("Prop is already in the array");
+                ROS_DEBUG_STREAM("Prop is already in the array");
             }
 
             
@@ -78,6 +79,8 @@ private:
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "prop_mapping_node");
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+        ros::console::notifyLoggerLevelsChanged();
     PropMapping prop_mapper;
     prop_mapper.spin();
     return 0;
