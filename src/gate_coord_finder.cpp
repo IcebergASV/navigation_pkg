@@ -6,8 +6,10 @@
 #include <navigation_pkg/Gate.h>
 #include <navigation_pkg/SimpleGPS.h> //temporary
 #include <geographic_msgs/GeoPoint.h>
+#include <sensor_msgs/NavSatFix.h>
 #include <cmath> 
 #include <ros/console.h>
+#include "gpsPoint.h"
 
 
 
@@ -34,21 +36,51 @@ public:
     }
 
 private:
-    void gpsCallback(const navigation_pkg::SimpleGPS::ConstPtr& msg)
+    void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) 
     {
         robot_lat_ = msg->latitude;
         robot_lon_ = msg->longitude;
         robot_alt_ = msg->altitude;
     }
 
-    void compassCallback(const navigation_pkg::Compass::ConstPtr& msg)
+    void compassCallback(const std_msgs::Float64::ConstPtr& msg)
     {
-        robot_heading = msg->heading;
+        robot_heading = msg->data;
     }
 
     void propCallback(const navigation_pkg::GateInProgress::ConstPtr& msg)
     {
-        //// Calculate the GPS coordinates of the prop
+        
+        //// Calculate the GPS coordinates of each marker
+        gpsPoint close_marker_coords = mapProp(msg->closer_marker);
+        gpsPoint far_marker_coords = mapProp(msg->farther_marker);
+
+        //calculate coordinates of midpoint of each marker
+        gpsPoint midpoint = calculateMidpoint(close_marker_coords, far_marker_coords);
+
+        navigation_pkg::Gate gate_msg;
+
+        gate_msg.closer_marker.prop_type = "marker";
+        gate_msg.closer_marker.prop_coords.latitude 
+        gate_msg.closer_marker.prop_coords.longitude
+        gate_msg.closer_marker.prop_coords.altitude
+
+        gate_msg.farther_marker.prop_type = "marker";
+        gate_msg.farther_marker.prop_coords.latitude 
+        gate_msg.farther_marker.prop_coords.longitude
+        gate_msg.farther_marker.prop_coords.altitude
+
+        gate_msg.midpoint.latitude
+        gate_msg.midpoint.longitude
+        gate_msg.midpoint.altitude
+
+        gate_msg.midpoint_range.min_latitude = lat - lat_safety_range;
+        gate_msg.midpoint_range.max_latitude = lat + lat_safety_range;
+        gate_msg.midpoint_range.min_longitude = lon - lon_safety_range;
+        gate_msg.midpoint_range.max_longitude = lon + lon_safety_range;
+
+        prop_pub_.publish(gate_msg);
+
         double dist = msg->closest_pnt_dist;
         double angle = msg->closest_pnt_angle;
         double prop_heading;
@@ -89,7 +121,7 @@ private:
         prop_pub_.publish(prop_msg);
     }
 
-    std::vector<int> mapProp(const std::vector<int>& largerVector, int startIndex, int endIndex) {
+    gpsPoint mapProp(const navigation_pkg::Gate::ConstPtr& marker) {
  
         if (startIndex > endIndex) {
             throw std::invalid_argument("Start index cannot be greater than end index");
