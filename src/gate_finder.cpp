@@ -10,9 +10,9 @@
 #include <iostream>
 #include <ros/console.h>
 
-class DistanceFinder {
+class GateFinder {
 public:
-    DistanceFinder() : nh_(""), private_nh_("~") {
+    GateFinder() : nh_(""), private_nh_("~") {
         // get ROS parameters
         private_nh_.param<std::string>("prop_topic", prop_topic_, "/prop_angle_range");
         private_nh_.param<std::string>("scan_topic", scan_topic_, "/scan");
@@ -326,11 +326,11 @@ private:
 
 };
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "distance_finder_node");
+    ros::init(argc, argv, "gate_finder_node");
     if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
         ros::console::notifyLoggerLevelsChanged();
-    DistanceFinder distance_finder;
+    GateFinder gate_finder;
 
-    distance_finder.spin();
+    gate_finder.spin();
     return 0;
 }

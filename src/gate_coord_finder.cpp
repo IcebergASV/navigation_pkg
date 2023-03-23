@@ -13,9 +13,9 @@
 
 
 
-class CoordFinder {
+class GateCoordFinder {
 public:
-    CoordFinder() : nh_(""), private_nh_("~") 
+    GateCoordFinder() : nh_(""), private_nh_("~") 
     {
         gps_sub_ = nh_.subscribe("/mavros/global_position/global", 1, &CoordFinder::gpsCallback, this);
         compass_sub_ = nh_.subscribe("/mavros/global_position/compass_hdg", 1, &CoordFinder::compassCallback, this );
@@ -144,10 +144,10 @@ private:
 };
 
 int main(int argc, char** argv) {
-    ros::init(argc, argv, "coord_finder_node");
+    ros::init(argc, argv, "gate_coord_finder_node");
     if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
         ros::console::notifyLoggerLevelsChanged();
-    CoordFinder coord_finder;
-    coord_finder.spin();
+    GateCoordFinder gate_coord_finder;
+    gate_coord_finder.spin();
     return 0;
 }
