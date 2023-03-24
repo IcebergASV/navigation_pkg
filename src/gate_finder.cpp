@@ -19,8 +19,8 @@ public:
         private_nh_.param<double>("max_range", max_range_, 10.0);
 
 
-        sub_scan_ = nh_.subscribe(scan_topic_, 1, &DistanceFinder::scanCallback, this);
-        sub_prop_ = nh_.subscribe(prop_topic_, 1, &DistanceFinder::propCallback, this);
+        sub_scan_ = nh_.subscribe(scan_topic_, 1, &GateFinder::scanCallback, this);
+        sub_prop_ = nh_.subscribe(prop_topic_, 1, &GateFinder::propCallback, this);
         pub_prop_closest_ = nh_.advertise<navigation_pkg::GateInProgress>("/gate_closest_point", 1);
         private_nh_.param<double>("angle_error_adjustment", angle_error_adjustment, 0.0);
         private_nh_.param<double>("marker_base_diameter_for_filtering", marker_diameter_for_filtering, 0.0 );
@@ -65,6 +65,7 @@ private:
     }
 
     void scanCallback(const sensor_msgs::LaserScan::ConstPtr& msg) {
+
         laser_angle_min = scan_msg.angle_min;
         laser_angle_max = scan_msg.angle_max;
 
@@ -106,7 +107,7 @@ private:
         ROS_DEBUG_STREAM("Laser angle min" << laser_angle_min);
         ROS_DEBUG_STREAM("Laser angle increment" << laser_angle_increment);
         double starting_angle = laser_angle_min + (M_PI/2.0);
-        std::vector<lidarPoint> scanPoints = DistanceFinder::createLidarPoints(scan_msg.ranges, starting_angle, laser_angle_increment);
+        std::vector<lidarPoint> scanPoints = GateFinder::createLidarPoints(scan_msg.ranges, starting_angle, laser_angle_increment);
         if (scanPoints.size()<1){
             ROS_WARN("No points added to scanPoints vector");
             return;
@@ -163,7 +164,7 @@ private:
         ROS_DEBUG_STREAM("closest angle " << closest_angle);
         
         //set closer marker
-        navigation_pkg::Gate gate_msg;
+        navigation_pkg::GateInProgress gate_msg;
         gate_msg.closer_marker.prop_type = prop_msg_.prop_type;
         gate_msg.closer_marker.theta_1 = prop_msg_.theta_1;
         gate_msg.closer_marker.theta_2 = prop_msg_.theta_2;
@@ -171,13 +172,33 @@ private:
         gate_msg.closer_marker.closest_pnt_angle = closest_angle;
 
         //remove closer marker from selected points -> selected points = selected points - filtered points
-        for (const auto& s_point : selectedPoints) {
-            for (const auto& f_point : filteredPoints){
-                if (s_point.getDistance() == f_point.getDistance() && s_point.getAngle() == f_point.getAngle()){
-                    selectedPoints.erase(s_point);
+        //for (std::vector<lidarPoint>::iterator i = selectedPoints.begin(); i != selectedPoints.end();) {
+        //    for (std::vector<lidarPoint>::iterator j = filteredPoints.begin(); j != filteredPoints.end();){
+        //        if (selectedPoints[i].getDistance() == filteredPoints[j].getDistance() && selectedPoints.at(i).getAngle() == filteredPoints[j].getAngle()){
+        //            i = selectedPoints.erase(i);
+        //        }
+        //    }            
+        //}
+
+        for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ) {
+            bool remove_point = false;
+            // iterate through the filteredPoints vector
+            for (const auto& fp : filteredPoints) {
+                // check if the points have the same distance
+                if ((it->getDistance() == fp.getDistance()) && (it->getAngle() == fp.getAngle())) {
+                    remove_point = true;
+                    break;
                 }
-            }            
+            }
+            // remove the point if it has the same distance as a point in the filteredPoints vector
+            if (remove_point) {
+                it = selectedPoints.erase(it);
+            }
+            else {
+                ++it;
+            }
         }
+    
         std::vector<lidarPoint> filteredPoints2 = filterPoints(selectedPoints, marker_diameter_for_filtering);
         //filter new selected points 
         if (filteredPoints2.size()<1){
@@ -192,14 +213,14 @@ private:
 
 
         //calculate the radius of the prop
-        double radius = calculateRadius(filteredPoints2);
-        std::string radius_str = std::to_string(radius);
-        ROS_DEBUG_STREAM("calculated radius" << radius_str);
+        double radius2 = calculateRadius(filteredPoints2);
+        std::string radius_str2 = std::to_string(radius2);
+        ROS_DEBUG_STREAM("calculated radius" << radius_str2);
         //Could add in check here to exclude the prop if the measured radius doesn't match expected radius
 
         // find the distance from the center of closest point and angle within the given range
 
-        int i = 0;
+        i = 0;
         closest_distance = filteredPoints2[i].getDistance();
         closest_angle = filteredPoints2[i].getAngle();
         for (int i = 0; i < filteredPoints2.size(); ++i) {
@@ -327,7 +348,7 @@ private:
 };
 int main(int argc, char** argv) {
     ros::init(argc, argv, "gate_finder_node");
-    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
         ros::console::notifyLoggerLevelsChanged();
     GateFinder gate_finder;
 

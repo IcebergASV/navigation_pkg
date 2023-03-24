@@ -7,7 +7,7 @@ class GateMapping {
 public:
     GateMapping()
     {
-        prop_sub_ = nh_.subscribe("/completed_gates", 1, &PropMapping::propCallback, this);
+        prop_sub_ = nh_.subscribe("/completed_gates", 1, &GateMapping::propCallback, this);
         prop_pub_ = nh_.advertise<navigation_pkg::GateArray>("/gate_array", 1);
         
     }
@@ -45,7 +45,7 @@ private:
         gate.midpoint_range.min_longitude = msg->midpoint_range.min_longitude;
         gate.midpoint_range.max_longitude = msg->midpoint_range.max_longitude;
         gate.midpoint_range.min_altitude = msg->midpoint_range.min_altitude;
-        gate.midpoint_range.max_altitude = msg->midpoint_range.max_altitugate;
+        gate.midpoint_range.max_altitude = msg->midpoint_range.max_altitude;
 
 
 
@@ -54,7 +54,7 @@ private:
             
         if (isPropInArray(gate) == false){
             // add prop to array if not already there
-            prop_array.props.push_back(gate);
+            gate_array.gates.push_back(gate);
             ROS_INFO_STREAM("New gate identified, adding to map");
         }
 
@@ -66,7 +66,7 @@ private:
     ros::NodeHandle nh_;
     ros::Subscriber prop_sub_;
     ros::Publisher prop_pub_;
-    navigation_pkg::PropArray gate_array;
+    navigation_pkg::GateArray gate_array;
 
     bool isPropInArray(navigation_pkg::Gate gate){
         //use safety ranges to decide if prop is already in array

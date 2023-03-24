@@ -20,12 +20,12 @@ double gpsPoint::getLongitude() const {
 }
 
 // Setter for latitude
-void gpsPoint::setDistance(double latitude) {
+void gpsPoint::setLatitude(double latitude) {
     latitude_ = latitude;
 }
 
 // Setter for longitude
-void gpsPoint::setAngle(double longitude) {
+void gpsPoint::setLongitude(double longitude) {
     longitude_ = longitude;
 }
 

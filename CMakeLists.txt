@@ -283,9 +283,10 @@ target_link_libraries(distance_finder_node
  )
 
   target_link_libraries(gate_coord_finder_node
+  lidarPointLib
   gpsPointLib
  )
 
-target_link_libraries(gate_mapping
+target_link_libraries(gate_mapping_node
   gpsPointLib
  )

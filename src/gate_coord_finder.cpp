@@ -10,6 +10,8 @@
 #include <cmath> 
 #include <ros/console.h>
 #include "gpsPoint.h"
+#include "lidarPoint.h"
+#include <std_msgs/Float64.h>
 
 
 
@@ -17,9 +19,9 @@ class GateCoordFinder {
 public:
     GateCoordFinder() : nh_(""), private_nh_("~") 
     {
-        gps_sub_ = nh_.subscribe("/mavros/global_position/global", 1, &CoordFinder::gpsCallback, this);
-        compass_sub_ = nh_.subscribe("/mavros/global_position/compass_hdg", 1, &CoordFinder::compassCallback, this );
-        prop_sub_ = nh_.subscribe("/gate_closest_point", 1, &CoordFinder::propCallback, this);
+        gps_sub_ = nh_.subscribe("/mavros/global_position/global", 1, &GateCoordFinder::gpsCallback, this);
+        compass_sub_ = nh_.subscribe("/mavros/global_position/compass_hdg", 1, &GateCoordFinder::compassCallback, this );
+        prop_sub_ = nh_.subscribe("/gate_closest_point", 1, &GateCoordFinder::propCallback, this);
         prop_pub_ = nh_.advertise<navigation_pkg::Gate>("/completed_gates", 1);
         private_nh_.param<double>("coord_mapping_error_estimation", coord_mapping_error_estimation, 0.0); 
         private_nh_.param<double>("degrees_lat_per_meter", degrees_lat_per_meter, 0.0);
@@ -36,16 +38,19 @@ public:
     }
 
 private:
-    void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) 
+    //void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) 
+    void gpsCallback(const navigation_pkg::SimpleGPS::ConstPtr& msg) 
     {
         robot_lat_ = msg->latitude;
         robot_lon_ = msg->longitude;
         robot_alt_ = msg->altitude;
     }
 
-    void compassCallback(const std_msgs::Float64::ConstPtr& msg)
+    //void compassCallback(const std_msgs::Float64::ConstPtr& msg)
+    void compassCallback(const navigation_pkg::Compass::ConstPtr& msg) 
     {
-        robot_heading = msg->data;
+        //robot_heading = msg->data;
+        robot_heading = msg->heading;
     }
 
     void propCallback(const navigation_pkg::GateInProgress::ConstPtr& msg)
@@ -53,10 +58,10 @@ private:
         //get lidar points for both markers
         lidarPoint close_marker_lidar_point;
         lidarPoint far_marker_lidar_point;
-        close_marker_lidar_point.setDistance(msg.closer_marker.closest_point_distance);
-        close_marker_lidar_point.setAngle(msg.closer_marker.closest_point_angle);
-        far_marker_lidar_point.setDistance(msg.far_marker.closest_point_distance);
-        far_marker_lidar_point.setAngle(msg.far_marker.closest_point_angle);
+        close_marker_lidar_point.setDistance(msg->closer_marker.closest_pnt_dist);
+        close_marker_lidar_point.setAngle(msg->closer_marker.closest_pnt_angle);
+        far_marker_lidar_point.setDistance(msg->farther_marker.closest_pnt_dist);
+        far_marker_lidar_point.setAngle(msg->farther_marker.closest_pnt_angle);
 
         //// Calculate the GPS coordinates of each marker
         gpsPoint close_marker_coords = mapProp(close_marker_lidar_point);
@@ -82,14 +87,14 @@ private:
         gate_msg.farther_marker.prop_coords.longitude = far_marker_coords.getLongitude();
         gate_msg.farther_marker.prop_coords.altitude = robot_alt_;
 
-        gate_msg.midpoint.latitude = 0.0;
-        gate_msg.midpoint.longitude = 0.0;
-        gate_msg.midpoint.altitude = 0.0;
+        gate_msg.midpoint_coords.latitude = 0.0;
+        gate_msg.midpoint_coords.longitude = 0.0;
+        gate_msg.midpoint_coords.altitude = 0.0;
 
-        gate_msg.midpoint_range.min_latitude = lat - lat_safety_range;
-        gate_msg.midpoint_range.max_latitude = lat + lat_safety_range;
-        gate_msg.midpoint_range.min_longitude = lon - lon_safety_range;
-        gate_msg.midpoint_range.max_longitude = lon + lon_safety_range;
+        gate_msg.midpoint_range.min_latitude = lat_safety_range;
+        gate_msg.midpoint_range.max_latitude = lat_safety_range;
+        gate_msg.midpoint_range.min_longitude = lon_safety_range;
+        gate_msg.midpoint_range.max_longitude = lon_safety_range;
 
         prop_pub_.publish(gate_msg);
     }
