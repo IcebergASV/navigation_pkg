@@ -41,7 +41,7 @@ private:
 
     void compassCallback(const navigation_pkg::Compass::ConstPtr& msg)
     {
-        robot_heading = msg->heading;
+        robot_heading = msg->data;
     }
 
     void propCallback(const navigation_pkg::PropInProgress::ConstPtr& msg)

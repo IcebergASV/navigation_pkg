@@ -62,6 +62,9 @@ add_message_files(
   SimpleGPS.msg
   yolo.msg
   Compass.msg
+  Gate.msg
+  GateInProgress.msg
+  GateArray.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -140,6 +143,11 @@ include_directories(
 add_library(lidarPointLib
   src/lidarPoint.cpp
   src/lidarPoint.h
+)
+
+add_library(gpsPointLib
+  src/gpsPoint.cpp
+  src/gpsPoint.h
 )
 
 ## Add cmake target dependencies of the library
@@ -227,9 +235,17 @@ add_executable(distance_finder_node src/distance_finder.cpp)
 target_link_libraries(distance_finder_node ${catkin_LIBRARIES})
 add_dependencies(distance_finder_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(gate_finder_node src/gate_finder.cpp)
+target_link_libraries(gate_finder_node ${catkin_LIBRARIES})
+add_dependencies(gate_finder_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 add_executable(coord_finder_node src/coord_finder.cpp)
 target_link_libraries(coord_finder_node ${catkin_LIBRARIES})
 add_dependencies(coord_finder_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
+add_executable(gate_coord_finder_node src/gate_coord_finder.cpp)
+target_link_libraries(gate_coord_finder_node ${catkin_LIBRARIES})
+add_dependencies(gate_coord_finder_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
 add_executable(fake_robot_coords_node src/fake_robot_coords.cpp)
 target_link_libraries(fake_robot_coords_node ${catkin_LIBRARIES})
@@ -247,6 +263,10 @@ add_executable(prop_mapping_node src/prop_mapping.cpp)
 target_link_libraries(prop_mapping_node ${catkin_LIBRARIES})
 add_dependencies(prop_mapping_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
 
+add_executable(gate_mapping_node src/gate_mapping.cpp)
+target_link_libraries(gate_mapping_node ${catkin_LIBRARIES})
+add_dependencies(gate_mapping_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
+
 add_executable(fake_compass_headings_node src/fake_compass_headings.cpp)
 target_link_libraries(fake_compass_headings_node ${catkin_LIBRARIES})
 add_dependencies(fake_compass_headings_node ${catkin_EXPORTED_TARGETS} ${${PROJECT_NAME}_EXPORTED_TARGETS})
@@ -256,4 +276,17 @@ add_dependencies(fake_compass_headings_node ${catkin_EXPORTED_TARGETS} ${${PROJE
 ## Specify libraries to link a library or executable target against
 target_link_libraries(distance_finder_node
   lidarPointLib
+ )
+
+ target_link_libraries(gate_finder_node
+  lidarPointLib
+ )
+
+  target_link_libraries(gate_coord_finder_node
+  lidarPointLib
+  gpsPointLib
+ )
+
+target_link_libraries(gate_mapping_node
+  gpsPointLib
  )
