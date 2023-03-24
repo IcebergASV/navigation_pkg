@@ -8,7 +8,7 @@
     <arg name="prop-mapping" default="false"/> <!-- requires 'cordinate-mapping'-->
 
   <!-- Specify if you want to use simulated sensors below, if not fake constant values are produced to replace them-->
-    <arg name="compass-gps" default="false"/>
+    <arg name="sim-compass-gps" default="true"/>
   <!--=======================================================================-->
 
   
@@ -29,21 +29,21 @@
     <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
   </node>
 
-  <node name="fake_robot_coords" pkg="navigation_pkg" type="fake_robot_coords_node" output="log" unless="$(arg compass-gps)">
+  <node name="fake_robot_coords" pkg="navigation_pkg" type="fake_robot_coords_node" output="log" if="$(arg sim-compass-gps)">
   </node>
 
-  <node name="fake_compass_headings" pkg="navigation_pkg" type="fake_compass_headings_node" output="log" unless="$(arg compass-gps)">
+  <node name="fake_compass_headings" pkg="navigation_pkg" type="fake_compass_headings_node" output="log" if="$(arg sim-compass-gps)">
   </node>
 
   <node name="coord_finder" pkg="navigation_pkg" type="coord_finder_node" output="log" if="$(arg coordinate-mapping)">
-    <remap from="mavros/global_position/global" to="rectbot_coords" unless="$(arg compass-gps)"/>
-    <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" unless="$(arg compass-gps)"/>
+    <remap from="mavros/global_position/global" to="rectbot_coords" if="$(arg sim-compass-gps)"/>
+    <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" if="$(arg sim-compass-gps)"/>
     <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
   </node>
 
   <node name="gate_coord_finder" pkg="navigation_pkg" type="gate_coord_finder_node" output="screen" if="$(arg gate-mapping)">
-    <remap from="mavros/global_position/global" to="rectbot_coords" unless="$(arg compass-gps)"/>
-    <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" unless="$(arg compass-gps)"/>
+    <remap from="mavros/global_position/global" to="rectbot_coords" if="$(arg sim-compass-gps)"/>
+    <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" if="$(arg sim-compass-gps)"/>
     <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
   </node>
 

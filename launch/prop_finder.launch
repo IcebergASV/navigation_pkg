@@ -2,9 +2,10 @@
 <launch>
   <!-- Specify what functionality you are testing-->
     <arg name="yolo-detection-with-camera" default="false"/>
-    <arg name="lidar-distance-angle-measurement" default="true"/>
-    <arg name="coordinate-mapping" default="true"/> <!--requires 'lidar-distance-angle-measurement'-->
-    <arg name="prop-mapping" default="true"/> <!-- requires 'cordinate-mapping'-->
+    <arg name="lidar-distance-angle-measurement-with-distance-finder" default="false"/>
+    <arg name="gate-mapping" default="true"/>
+    <arg name="coordinate-mapping" default="false"/> <!--requires 'lidar-distance-angle-measurement'-->
+    <arg name="prop-mapping" default="false"/> <!-- requires 'cordinate-mapping'-->
 
   <!-- Specify if you want to use simulated sensor readings-->
     <arg name="sim-compass-gps" default="false"/>
@@ -18,7 +19,11 @@
     <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
   </node>
 
-  <node name="distance_finder" pkg="navigation_pkg" type="distance_finder_node" output="log" if="$(arg lidar-distance-angle-measurement)" >
+  <node name="distance_finder" pkg="navigation_pkg" type="distance_finder_node" output="log" if="$(arg lidar-distance-angle-measurement-with-distance-finder)" >
+    <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
+  </node>
+
+  <node name="gate_finder" pkg="navigation_pkg" type="gate_finder_node" output="log" if="$(arg gate-mapping)" >
     <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
   </node>
 
@@ -34,7 +39,16 @@
     <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
   </node>
 
+  <node name="gate_coord_finder" pkg="navigation_pkg" type="gate_coord_finder_node" output="screen" if="$(arg gate-mapping)">
+    <remap from="mavros/global_position/global" to="rectbot_coords" if="$(arg sim-compass-gps)"/>
+    <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" if="$(arg sim-compass-gps)"/>
+    <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
+  </node>
+
   <node name="prop_mapping" pkg="navigation_pkg" type="prop_mapping_node" output="log" if="$(arg prop-mapping)">
+  </node>
+
+  <node name="gate_mapping" pkg="navigation_pkg" type="gate_mapping_node" output="log" if="$(arg gate-mapping)">
   </node>
 
 </launch>

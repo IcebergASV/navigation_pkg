@@ -49,8 +49,7 @@ private:
     //void compassCallback(const std_msgs::Float64::ConstPtr& msg)
     void compassCallback(const navigation_pkg::Compass::ConstPtr& msg) 
     {
-        //robot_heading = msg->data;
-        robot_heading = msg->heading;
+        robot_heading = msg->data;
     }
 
     void propCallback(const navigation_pkg::GateInProgress::ConstPtr& msg)
@@ -68,12 +67,16 @@ private:
         gpsPoint far_marker_coords = mapProp(far_marker_lidar_point);
 
         //calculate coordinates of midpoint of each marker - to do
-        //gpsPoint midpoint = calculateMidpoint(close_marker_coords, far_marker_coords);
+        gpsPoint midpoint = calculateMidpoint(close_marker_coords, far_marker_coords);
 
         //mid point safety range
 
+
+
         double lat_safety_range = degrees_lat_per_meter * coord_mapping_error_estimation;
         double lon_safety_range = degrees_lon_per_meter * coord_mapping_error_estimation;
+
+
 
         navigation_pkg::Gate gate_msg;
 
@@ -87,14 +90,15 @@ private:
         gate_msg.farther_marker.prop_coords.longitude = far_marker_coords.getLongitude();
         gate_msg.farther_marker.prop_coords.altitude = robot_alt_;
 
-        gate_msg.midpoint_coords.latitude = 0.0;
-        gate_msg.midpoint_coords.longitude = 0.0;
-        gate_msg.midpoint_coords.altitude = 0.0;
 
-        gate_msg.midpoint_range.min_latitude = lat_safety_range;
-        gate_msg.midpoint_range.max_latitude = lat_safety_range;
-        gate_msg.midpoint_range.min_longitude = lon_safety_range;
-        gate_msg.midpoint_range.max_longitude = lon_safety_range;
+        gate_msg.midpoint_coords.latitude = midpoint.getLatitude();
+        gate_msg.midpoint_coords.longitude = midpoint.getLongitude();
+        gate_msg.midpoint_coords.altitude = robot_alt_;
+
+        gate_msg.midpoint_range.min_latitude = midpoint.getLatitude() - lat_safety_range;
+        gate_msg.midpoint_range.max_latitude = midpoint.getLongitude() + lat_safety_range;
+        gate_msg.midpoint_range.min_longitude = midpoint.getLatitude() - lon_safety_range;
+        gate_msg.midpoint_range.max_longitude = midpoint.getLongitude() + lon_safety_range;
 
         prop_pub_.publish(gate_msg);
     }
@@ -128,6 +132,44 @@ private:
         return prop_coords;
 
     }
+    double deg_to_rad(double deg){
+
+        double conversion_value_rad = deg*(M_PI/180);
+        return conversion_value_rad;
+
+    }
+
+
+
+    double rad_to_deg(double rad){
+
+        double conversion_value_deg = rad*(180/M_PI);    
+        return conversion_value_deg;
+
+    }
+
+
+
+    gpsPoint calculateMidpoint(const gpsPoint& set1, const gpsPoint& set2){
+
+        //Convert latitude and longitude to radians
+        double lat1_rad = deg_to_rad(set1.getLatitude());
+        double long1_rad = deg_to_rad(set1.getLongitude());
+        double lat2_rad = deg_to_rad(set2.getLatitude());
+        double long2_rad = deg_to_rad(set2.getLongitude());
+
+        //Get midpoints in radians
+        double avg_latitude_rad = (lat1_rad+lat2_rad)/2;
+        double avg_longitude_rad = (long1_rad+long2_rad)/2;
+
+        //Convert the midpoint to latitude and longitude back to degrees
+        double midpoint_lat = rad_to_deg(avg_latitude_rad);
+        double midpoint_long = rad_to_deg(avg_longitude_rad);
+
+        gpsPoint midpoint(midpoint_lat, midpoint_long);
+        return midpoint;
+
+    };
 
     ros::NodeHandle nh_;
     ros::NodeHandle private_nh_;
@@ -147,6 +189,8 @@ private:
 
 
 };
+
+
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "gate_coord_finder_node");

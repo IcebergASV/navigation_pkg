@@ -24,6 +24,7 @@ public:
         pub_prop_closest_ = nh_.advertise<navigation_pkg::GateInProgress>("/gate_closest_point", 1);
         private_nh_.param<double>("angle_error_adjustment", angle_error_adjustment, 0.0);
         private_nh_.param<double>("marker_base_diameter_for_filtering", marker_diameter_for_filtering, 0.0 );
+        private_nh_.param<double>("marker_radius_for_filtering", marker_radius_for_filtering, 0.0);
         private_nh_.param<double>("max_lidar_range", max_lidar_range, 0.0 );
         private_nh_.param<double>("min_lidar_range", min_lidar_range, 0.0 );
 
@@ -52,6 +53,7 @@ private:
     double laser_angle_increment;
     double angle_error_adjustment;
     double marker_diameter_for_filtering; 
+    double marker_radius_for_filtering;
     double max_lidar_range;
     double min_lidar_range;
     navigation_pkg::PropInProgress prop_msg_;
@@ -119,7 +121,7 @@ private:
         for (int i = index1; i <= index2; i++) {
 
             selectedPoints.push_back(scanPoints[i]);
-            ROS_DEBUG_STREAM("Pushing back points within camera range: " << scanPoints[i]);
+            //ROS_DEBUG_STREAM("Pushing back points within camera range: " << scanPoints[i]);
         }
         if (selectedPoints.size()<1){
             ROS_WARN("No points added to vector containing points within camera range ");
@@ -130,7 +132,7 @@ private:
         std::vector<lidarPoint> filteredPoints = filterPoints(selectedPoints, marker_diameter_for_filtering);
         ROS_DEBUG_STREAM("filteredPoints Vector created");
         if (filteredPoints.size()<1){
-            ROS_WARN("No points passed through filter");
+            ROS_WARN("No points passed through filter1");
             return;
         }
         // Iterate through the vector and print each element
@@ -182,6 +184,7 @@ private:
 
         for (auto it = selectedPoints.begin(); it != selectedPoints.end(); ) {
             bool remove_point = false;
+            ROS_DEBUG_STREAM("Checking this point : " << it->getDistance());
             // iterate through the filteredPoints vector
             for (const auto& fp : filteredPoints) {
                 // check if the points have the same distance
@@ -192,6 +195,7 @@ private:
             }
             // remove the point if it has the same distance as a point in the filteredPoints vector
             if (remove_point) {
+                ROS_DEBUG_STREAM("Erasing this point" << it->getDistance());
                 it = selectedPoints.erase(it);
             }
             else {
@@ -202,7 +206,7 @@ private:
         std::vector<lidarPoint> filteredPoints2 = filterPoints(selectedPoints, marker_diameter_for_filtering);
         //filter new selected points 
         if (filteredPoints2.size()<1){
-            ROS_WARN("No points passed through filter");
+            ROS_WARN("No points passed through filter2");
             return;
         }
         // Iterate through the vector and print each element
@@ -242,6 +246,8 @@ private:
         gate_msg.farther_marker.theta_2 = prop_msg_.theta_2;
         gate_msg.farther_marker.closest_pnt_dist = closest_distance;
         gate_msg.farther_marker.closest_pnt_angle = closest_angle;
+
+
         
         pub_prop_closest_.publish(gate_msg);
     }
@@ -283,7 +289,7 @@ private:
     return smallerVector;
     }
 
-    std::vector<lidarPoint> filterPoints(const std::vector<lidarPoint>& inputVector, double range) {
+    std::vector<lidarPoint> filterForRadius(const std::vector<lidarPoint>& inputVector, double range) {
         //removes points that dont belong to prop by removing points not close to the closest detected point
         //note - this is no good if the closest detected point is not a part of the marker
         if (inputVector.size()<1){
@@ -319,6 +325,73 @@ private:
 
     return outputVector;
     }
+    std::vector<lidarPoint> filterPoints(const std::vector<lidarPoint>& inputVector, double range) {
+        //removes points that dont belong to prop by removing points not close to the closest detected point
+        //note - this is no good if the closest detected point is not a part of the marker
+        if (inputVector.size()<1){
+            ROS_WARN("No points passed into filter");
+        }
+        std::vector<lidarPoint> outputVector;
+
+        //identify smallest distance lidar picks up and it's angle
+        double smallest_distance = max_lidar_range;
+        double smallest_angle;
+        ROS_DEBUG_STREAM("max_lidar_range" << max_lidar_range);
+        ROS_DEBUG_STREAM("inputVector.size " << inputVector.size());
+        for (lidarPoint point : inputVector) {
+
+            if (std::isnan(point.getDistance())) {
+                continue; 
+                ROS_WARN("no distance in point");
+            }
+            if(point.getDistance() < smallest_distance){
+                smallest_distance = point.getDistance();
+                smallest_angle = point.getAngle();
+                ROS_DEBUG_STREAM("Changing smallest distance to : " << smallest_distance);       
+            }
+            else {
+                //ROS_DEBUG_STREAM("smallest_distance : " << smallest_distance << " inputVector[i].getDISTANCE : " << point.getDistance());
+            }
+
+            //
+
+            
+        }
+
+        double angle;
+        if (smallest_angle <= (M_PI/2)){
+            angle = (M_PI/2) - smallest_angle;
+        }
+        else {
+            angle = smallest_angle - (M_PI/2);
+        }
+        double x_dist = smallest_distance * cos(angle);
+        double y_dist = smallest_distance * sin(angle);
+        double y_dist_ext = y_dist + marker_radius_for_filtering;
+        double hypotenuse = sqrt(pow(x_dist,2) + pow(y_dist_ext, 2));
+        double angle_ext = acos(x_dist / hypotenuse); 
+        double angle_lower_bound = smallest_angle - angle_ext;
+        double angle_upper_bound = smallest_angle + angle_ext;
+
+
+        ROS_DEBUG_STREAM("Angle Upper bound " << angle_upper_bound);
+        ROS_DEBUG_STREAM("Angle lower bound " << angle_lower_bound);
+
+
+
+        // Add points to the output vector if their distance and angle is within the range
+        for (lidarPoint point : inputVector) {
+            if ((point.getDistance() >= smallest_distance)  && (point.getDistance() <= (smallest_distance + range)) && (point.getDistance() < max_lidar_range) 
+                && (point.getAngle() <= angle_upper_bound) && (point.getAngle() >= angle_lower_bound ) ) {
+                outputVector.push_back(point);
+                ROS_DEBUG_STREAM("Just pushed back: " << point << " Into filtered Points Vector");
+            }
+        }
+
+        //remove points if they aren't close enough to the closest point
+
+    return outputVector;
+    }
     
     double calculateRadius(const std::vector<lidarPoint>& points) {
         // Check that we have at least 6 points
@@ -345,10 +418,12 @@ private:
         //return radius;
     }
 
+
+
 };
 int main(int argc, char** argv) {
     ros::init(argc, argv, "gate_finder_node");
-    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
         ros::console::notifyLoggerLevelsChanged();
     GateFinder gate_finder;
 
