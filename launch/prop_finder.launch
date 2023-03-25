@@ -39,7 +39,7 @@
     <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />
   </node>
 
-  <node name="gate_coord_finder" pkg="navigation_pkg" type="gate_coord_finder_node" output="screen" if="$(arg gate-mapping)">
+  <node name="gate_coord_finder" pkg="navigation_pkg" type="gate_coord_finder_node" output="log" if="$(arg gate-mapping)">
     <remap from="mavros/global_position/global" to="rectbot_coords" if="$(arg sim-compass-gps)"/>
     <remap from="mavros/global_position/compass_hdg" to="rectbot_heading" if="$(arg sim-compass-gps)"/>
     <rosparam file="$(find navigation_pkg)/config/navigation_params.yaml" command="load" />

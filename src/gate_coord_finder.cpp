@@ -38,16 +38,17 @@ public:
     }
 
 private:
-    //void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) 
-    void gpsCallback(const navigation_pkg::SimpleGPS::ConstPtr& msg) 
+    void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) 
+    //void gpsCallback(const navigation_pkg::SimpleGPS::ConstPtr& msg) 
     {
         robot_lat_ = msg->latitude;
         robot_lon_ = msg->longitude;
         robot_alt_ = msg->altitude;
+        ROS_DEBUG_STREAM("Robot Latitude: " << robot_lat_ << "Robot Longitude: " << robot_lon_);
     }
 
-    //void compassCallback(const std_msgs::Float64::ConstPtr& msg)
-    void compassCallback(const navigation_pkg::Compass::ConstPtr& msg) 
+    void compassCallback(const std_msgs::Float64::ConstPtr& msg)
+    //void compassCallback(const navigation_pkg::Compass::ConstPtr& msg) 
     {
         robot_heading = msg->data;
     }
@@ -194,7 +195,7 @@ private:
 
 int main(int argc, char** argv) {
     ros::init(argc, argv, "gate_coord_finder_node");
-    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Info))
+    if (ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME, ros::console::levels::Debug))
         ros::console::notifyLoggerLevelsChanged();
     GateCoordFinder gate_coord_finder;
     gate_coord_finder.spin();
