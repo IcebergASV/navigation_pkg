@@ -5,7 +5,6 @@
 #include <navigation_pkg/GateInProgress.h>
 #include <navigation_pkg/Gate.h>
 #include <navigation_pkg/SimpleGPS.h> //temporary
-#include <geographic_msgs/GeoPoint.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <cmath> 
 #include <ros/console.h>
