@@ -2,10 +2,10 @@
 <launch>
   <!-- Specify what functionality you are testing-->
     <arg name="yolo-detection-with-camera" default="false"/> <!-- not implemented yet-->
-    <arg name="lidar-distance-angle-measurement-with-distance-finder" default="false"/>
+    <arg name="lidar-distance-angle-measurement-with-distance-finder" default="true"/>
     <arg name="gate-mapping" default="true"/>
-    <arg name="coordinate-mapping" default="false"/> <!--requires 'lidar-distance-angle-measurement'-->
-    <arg name="prop-mapping" default="false"/> <!-- requires 'cordinate-mapping'-->
+    <arg name="coordinate-mapping" default="true"/> <!--requires 'lidar-distance-angle-measurement'-->
+    <arg name="prop-mapping" default="true"/> <!-- requires 'cordinate-mapping'-->
 
   <!-- Specify if you want to use simulated sensors below, if not fake constant values are produced to replace them-->
     <arg name="sim-compass-gps" default="true"/>

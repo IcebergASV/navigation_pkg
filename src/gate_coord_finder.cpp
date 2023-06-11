@@ -37,8 +37,8 @@ public:
     }
 
 private:
-    void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) 
-    //void gpsCallback(const navigation_pkg::SimpleGPS::ConstPtr& msg) 
+    //void gpsCallback(const sensor_msgs::NavSatFix::ConstPtr& msg) 
+    void gpsCallback(const navigation_pkg::SimpleGPS::ConstPtr& msg) 
     {
         robot_lat_ = msg->latitude;
         robot_lon_ = msg->longitude;
@@ -46,8 +46,8 @@ private:
         ROS_DEBUG_STREAM("Robot Latitude: " << robot_lat_ << "Robot Longitude: " << robot_lon_);
     }
 
-    void compassCallback(const std_msgs::Float64::ConstPtr& msg)
-    //void compassCallback(const navigation_pkg::Compass::ConstPtr& msg) 
+    //void compassCallback(const std_msgs::Float64::ConstPtr& msg)
+    void compassCallback(const navigation_pkg::Compass::ConstPtr& msg) 
     {
         robot_heading = msg->data;
     }
