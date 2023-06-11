@@ -1,23 +1,36 @@
 #include <ros/ros.h>
-#include <navigation_pkg/yolo.h> 
+#include <navigation_pkg/BoundingBox.h> 
+#include <navigation_pkg/BoundingBoxes.h>
 #include <ros/console.h>
 
 void fake_yolo_boxes() {
     //for testing angle finder only - remove eventually
     ros::NodeHandle nh;
-    ros::Publisher pub = nh.advertise<navigation_pkg::yolo>("/yolo", 10);
+    ros::Publisher pub = nh.advertise<navigation_pkg::BoundingBoxes>("/yolo", 10);
     ros::Rate rate(10);
-    navigation_pkg::yolo msg;
-    msg.label = "red_marker";
-    msg.probability = 0.91; 
-    msg.xmin = 100;
-    msg.xmax = 300;
-    msg.ymin = 200;
-    msg.ymax = 400;
+    navigation_pkg::BoundingBoxes yolo;
+    navigation_pkg::BoundingBox box1;
+    navigation_pkg::BoundingBox box2;
+    box1.label = "red_marker";
+    box1.probability = 0.91; 
+    box1.xmin = 100;
+    box1.xmax = 300;
+    box1.ymin = 200;
+    box1.ymax = 400;
+
+    box2.label = "green_marker";
+    box2.probability = 0.86; 
+    box2.xmin = 400;
+    box2.xmax = 500;
+    box2.ymin = 200;
+    box2.ymax = 450;
+
+    yolo.bounding_boxes.push_back(box1);
+    yolo.bounding_boxes.push_back(box2);
 
     while (ros::ok()) {
-        ROS_DEBUG_STREAM(msg);
-        pub.publish(msg);
+        ROS_DEBUG_STREAM(yolo);
+        pub.publish(yolo);
         rate.sleep();
     }
 }

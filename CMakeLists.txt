@@ -60,7 +60,8 @@ add_message_files(
   PropArray.msg
   PropInProgress.msg
   SimpleGPS.msg
-  yolo.msg
+  BoundingBox.msg
+  BoundingBoxes.msg
   Compass.msg
   Gate.msg
   GateInProgress.msg

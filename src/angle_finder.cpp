@@ -1,5 +1,6 @@
 #include <ros/ros.h>
-#include <navigation_pkg/yolo.h>
+#include <navigation_pkg/BoundingBoxes.h>
+#include <navigation_pkg/BoundingBox.h>
 #include <navigation_pkg/PropInProgress.h>
 #include <cmath>
 #include <ros/console.h>
@@ -26,22 +27,26 @@ public:
 
 private:
 
-    void yoloCallback(const navigation_pkg::yolo::ConstPtr& msg)
+    void yoloCallback(const navigation_pkg::BoundingBoxes::ConstPtr& msg)
     {
-        //get the position of the bounding box
-        x_min = msg->xmin;
-        x_max = msg->xmax;
+        //navigation_pkg::BoundingBoxes boxes = msg;
+        for (navigation_pkg::BoundingBox box : msg->bounding_boxes){
+            //get the position of the bounding box
+            x_min = box.xmin;
+            x_max = box.xmax;
 
-        // Calculate the angle range for the prop
-        double theta_right = fov_end - ((x_max / realsense_res_x) * realsense_fov); 
-        double theta_left = fov_end - ((x_min / realsense_res_x) * realsense_fov);
-        
-        // Create and publish the Prop message with the prop coordinates
-        navigation_pkg::PropInProgress prop_msg;
-        prop_msg.prop_type = msg->label; //assign object classification label to the prop
-        prop_msg.theta_1 = theta_right;
-        prop_msg.theta_2 = theta_left;
-        prop_pub_.publish(prop_msg);
+            // Calculate the angle range for the prop
+            double theta_right = fov_end - ((box.xmax / realsense_res_x) * realsense_fov); 
+            double theta_left = fov_end - ((box.xmin / realsense_res_x) * realsense_fov);
+
+            // Create and publish the Prop message with the prop coordinates
+            navigation_pkg::PropInProgress prop_msg;
+            prop_msg.prop_type = box.label; //assign object classification label to the prop
+            prop_msg.theta_1 = theta_right;
+            prop_msg.theta_2 = theta_left;
+            prop_pub_.publish(prop_msg);
+        }
+
     }
 
     ros::NodeHandle nh_;
