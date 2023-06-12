@@ -17,14 +17,14 @@ void fake_bbox_angles() {
     while (ros::ok()) {
         if (red_marker){
             msg.prop_type = "red_marker";
-            msg.theta_1 = 60*(M_PI/180); 
-            msg.theta_2 = 120*(M_PI/180);
+            msg.theta_1 = 91*(M_PI/180); 
+            msg.theta_2 = 140*(M_PI/180);
             red_marker = false;
         }
         else{
             msg.prop_type = "green_marker";
-            msg.theta_1 = 60*(M_PI/180); 
-            msg.theta_2 = 120*(M_PI/180); 
+            msg.theta_1 = 45*(M_PI/180); 
+            msg.theta_2 = 89*(M_PI/180); 
             red_marker = true;
         }
         ROS_DEBUG_STREAM("fake_bbox_angles: theta_1 - " << msg.theta_1 << "theta_2 - " << msg.theta_2);

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
   <!-- Specify what functionality you are testing-->
-    <arg name="yolo-detection-with-camera" default="true"/> <!-- not implemented yet-->
+    <arg name="yolo-detection-with-camera" default="false"/> <!-- not implemented yet-->
     <arg name="lidar-distance-angle-measurement-with-distance-finder" default="true"/>
     <arg name="gate-mapping" default="true"/>
     <arg name="coordinate-mapping" default="true"/> <!--requires 'lidar-distance-angle-measurement'-->
